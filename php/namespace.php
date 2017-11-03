@@ -582,7 +582,8 @@ function is_sso_enabled_network_wide() {
 /**
  * Transform the roles array into a proper network roles array
  *
- * @param array $roles
+ * @param \WP_User $user
+ * @param array    $attributes
  *
  * @return array
  */
