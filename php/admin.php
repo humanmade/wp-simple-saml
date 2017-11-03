@@ -18,6 +18,7 @@ function admin_bootstrap() {
 	add_action( 'update_wpmu_options', __NAMESPACE__ . '\\save_network_settings_fields' );
 
 	add_filter( 'wpsimplesaml_force', __NAMESPACE__ . '\\filter_forced_sso' );
+	add_filter( 'wpsimplesaml_manage_roles', __NAMESPACE__ . '\\filter_role_management' );
 }
 
 /**
@@ -258,4 +259,13 @@ function filter_forced_sso() {
 	}
 
 	return $force;
+}
+
+/**
+ * Enable or disable role management based on settings
+ *
+ * @return string
+ */
+function filter_role_management() {
+	return get_sso_settings( 'sso_role_management' );
 }

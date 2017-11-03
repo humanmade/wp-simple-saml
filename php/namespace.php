@@ -368,8 +368,6 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
  */
 function map_user_roles( $user, array $attributes ) {
 
-	$enabled = is_sso_enabled_network_wide() ? get_site_option( 'sso_role_management', false ) : get_option( 'sso_role_management', false );
-
 	/**
 	 * Filter to allow role mapping
 	 *
@@ -379,7 +377,7 @@ function map_user_roles( $user, array $attributes ) {
 	 *
 	 * @return bool Allow user role mapping
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_manage_roles', $enabled, $user ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_manage_roles', false, $user ) ) {
 		return;
 	}
 
