@@ -24,8 +24,6 @@ function admin_bootstrap() {
 /**
  * Return WP Simple SAML configurations
  *
- * @param array $settings The default settings (usually an empty array).
- *
  * @return array Site-specific SSO settings.
  */
 function get_config() {
@@ -99,7 +97,9 @@ function config_admin_notice() {
 /**
  * Get SSO settings from options
  *
- * @return array
+ * @param null $option Return a specific option value instead of the whole array
+ *
+ * @return array|string All options, or a specific option value if $option was passed
  */
 function get_sso_settings( $option = null ) {
 	$options = [
@@ -154,7 +154,7 @@ function settings_fields() {
 		?>
 		<select name="sso_enabled" id="sso_enabled">
 			<?php foreach ( $options as $option_value => $option_label ) : ?>
-				<option value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ) ?>>
+				<option value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ); ?>>
 					<?php echo esc_html( $option_label ); ?>
 				</option>
 			<?php endforeach; ?>
@@ -230,7 +230,7 @@ function save_network_settings_fields() {
 	if ( isset( $_POST['sso_debug'] ) ) { // WPCS input var ok
 		update_site_option( 'sso_debug', absint( $_POST['sso_debug'] ) ); // WPCS input var ok
 	} else {
-		delete_site_option( 'sso_debug', absint( $_POST['sso_debug'] ) ); // WPCS input var ok
+		delete_site_option( 'sso_debug' ); // WPCS input var ok
 	}
 
 	if ( isset( $_POST['sso_sp_base'] ) ) { // WPCS input var ok
@@ -245,7 +245,7 @@ function save_network_settings_fields() {
 /**
  * Activate/deactivate SSO based on configuration.
  *
- * @param bool $force Whether to ignore Forced SSO and allow the default WordPress login method.
+ * @filter wpsimplesaml_force
  *
  * @return bool Whether to ignore SSO.
  */
@@ -263,6 +263,8 @@ function filter_forced_sso() {
 
 /**
  * Enable or disable role management based on settings
+ *
+ * @filter wpsimplesaml_manage_roles
  *
  * @return string
  */
