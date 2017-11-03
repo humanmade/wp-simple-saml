@@ -62,10 +62,10 @@ function rewrites() {
 	add_rewrite_endpoint( 'sso', EP_ROOT, true );
 
 	// Attempt to flush rewrite rules on plugin activation, not perfect but it should work at least the first time
-	if ( ! get_transient( 'wpsimplesaml_rr_flushed' ) ) {
+	if ( ! get_option( 'wpsimplesaml_rr_flushed' ) ) {
 		flush_rewrite_rules();
 		do_action( 'rri_flush_rules' ); // Proper flushing on VIP environments
-		set_transient( 'wpsimplesaml_rr_flushed', true );
+		add_option( 'wpsimplesaml_rr_flushed', true );
 	}
 }
 
