@@ -125,7 +125,7 @@ function login_form_link() {
 	$output = sprintf(
 		'<p><a href="%s" id="login-via-sso">%s</a></p>',
 		esc_url( add_query_arg( 'redirect_to', urlencode( $redirect_url ), home_url( 'sso/login/' ) ) ), // @codingStandardsIgnoreLine
-		esc_html( apply_filters( 'wpsimplesaml_login_text', __( 'Login via SSO', 'wp-simple-saml' ) ) )
+		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( 'Login via SSO', 'wp-simple-saml' ) ) )
 	);
 
 	echo $output; // WPCS: xss ok
