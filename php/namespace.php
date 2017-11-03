@@ -280,7 +280,6 @@ function get_sso_user() {
 		$errors = implode( ', ', $saml->getErrors() );
 
 		/* translators: %s = error message */
-
 		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) ) );
 	}
 
