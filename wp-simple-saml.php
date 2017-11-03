@@ -550,5 +550,5 @@ function get_redirection_url() {
 		$redirect = admin_url();
 	}
 
-	return $redirect;
+	return esc_url_raw( $redirect );
 }
