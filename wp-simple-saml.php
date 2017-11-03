@@ -83,23 +83,25 @@ function endpoint() {
 		remove_action( 'template_redirect', [ $ds_more_privacy_options, 'ds_users_authenticator' ] );
 	}
 
-	if ( isset( $wp_query->query_vars['sso'] ) ) {
-
-		// If we have no valid instance, bail completely
-		if ( ! instance() ) {
-			wp_die( esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ) );
-		}
-
-		$request = ! empty( $wp_query->query_vars['sso'] ) ? $wp_query->query_vars['sso'] : 'login';
-		$action  = current( explode( '/', $request ) );
-
-		do_action( 'wpsimplesaml_action_' . $action );
-
-		// If nothing happens,
-		do_action( 'wpsimplesaml_invalid_endpoint', $action );
-		// i haz no monies!
-		wp_safe_redirect( home_url(), 404 );
+	if ( ! isset( $wp_query->query_vars['sso'] ) ) {
+		return;
 	}
+
+	// If we have no valid instance, bail completely
+	if ( ! instance() ) {
+		wp_die( esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ) );
+	}
+
+	$request = ! empty( $wp_query->query_vars['sso'] ) ? $wp_query->query_vars['sso'] : 'login';
+	$action  = current( explode( '/', $request ) );
+
+	do_action( 'wpsimplesaml_action_' . $action );
+
+	// If nothing happens,
+	do_action( 'wpsimplesaml_invalid_endpoint', $action );
+	// i haz no monies!
+	wp_safe_redirect( home_url(), 404 );
+	exit;
 }
 
 /**
