@@ -228,6 +228,7 @@ function action_login() {
 
 	if ( is_user_logged_in() ) {
 		wp_safe_redirect( $redirect_url );
+		exit;
 	}
 
 	instance()->login( $redirect_url );
