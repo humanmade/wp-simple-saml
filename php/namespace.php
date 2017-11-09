@@ -176,7 +176,7 @@ function instance() {
 		return $instance;
 	}
 
-	require_once __DIR__ . '/vendor/onelogin/php-saml/_toolkit_loader.php';
+	require_once dirname( WP_SIMPLE_SAML_PLUGIN_FILE ) . '/vendor/onelogin/php-saml/_toolkit_loader.php';
 
 	$config = apply_filters( 'wpsimplesaml_config', [] );
 
