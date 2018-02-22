@@ -462,12 +462,12 @@ function cross_site_sso_redirect( $url ) {
 	 * @param string $host Host name
 	 * @param string $url  Redirection URL
 	 *
-	 * @return bool|array List of hosts to whitelist, or false to disallow all
+	 * @return bool
 	 */
-	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', [], $host, $url );
-	if ( empty( $allowed_hosts ) || ! in_array( $host, $allowed_hosts, true ) ) {
+	$allowed_host = apply_filters( 'wpsimplesaml_allowed_host', false, $host, $url );
+	if ( ! $allowed_host ) {
 		/* translators: %s is domain of the blacklisted site */
-		wp_die( sprintf( esc_html__( '%s is not whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
+		wp_die( sprintf( esc_html__( '%s is not a whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
 	}
 
 	// Workaround for sub-directory installs, as we usually redirect to admin urls
