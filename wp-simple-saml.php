@@ -304,9 +304,9 @@ function get_sso_user() {
 	}
 
 	// Assumes the email is the unique identifier set in SAML IDP
-	$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
+	$email = apply_filters( 'wpsimplesaml_email', filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL ), $saml );
 
-	if ( ! $email ) {
+	if ( apply_filters( 'wpsimplesaml_verify_email', true ) && ! $email ) {
 		return new \WP_Error( 'invalid-email', esc_html__( 'Error: Invalid email passed. Contact your administrator.', 'wp-simple-saml' ) );
 	}
 
