@@ -48,7 +48,7 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\action_verify' );
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
-	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles' );
+	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
 }
 
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
