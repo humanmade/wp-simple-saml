@@ -348,6 +348,8 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
 			'user_email'    => $email,
 		];
 
+		$user_data = apply_filters( 'wpsimplesaml_user_data', $user_data, $attributes );
+
 		$user_id = wp_insert_user( $user_data );
 
 		if ( is_wp_error( $user_id ) ) {
