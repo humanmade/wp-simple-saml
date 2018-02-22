@@ -244,6 +244,7 @@ function action_verify() {
 
 	if ( is_user_logged_in() ) {
 		wp_safe_redirect( $redirect_url );
+		exit;
 	}
 
 	if ( empty( $_POST['SAMLResponse'] ) ) { // @codingStandardsIgnoreLine
@@ -256,6 +257,7 @@ function action_verify() {
 		signon( $user );
 
 		wp_safe_redirect( $redirect_url );
+		exit;
 	} elseif ( is_wp_error( $user ) ) {
 		wp_die( esc_html( $user->get_error_message() ) );
 	}
