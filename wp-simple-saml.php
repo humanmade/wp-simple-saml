@@ -112,7 +112,7 @@ function endpoint() {
 function login_form_link() {
 
 	/**
-	 * Filter whether we should show the SSO login link in login form
+	 * Filters whether we should show the SSO login link in login form
 	 *
 	 * @return bool  Forces SSO authentication if true, defaults to True
 	 */
@@ -144,7 +144,7 @@ function login_form_link() {
 function authenticate_with_sso() {
 
 	/**
-	 * Filter whether the plugin should intercepts this request or not, mainly used when SSO is forced
+	 * Filters whether the plugin should intercepts this request or not, mainly used when SSO is forced
 	 *
 	 * Used to whitelist IP/etc via a custom function, return true to skip -forced- SSO
 	 *
@@ -155,9 +155,9 @@ function authenticate_with_sso() {
 	}
 
 	/**
-	 * Filter whether the plugin should force SSO redirection
+	 * Filters whether the plugin should force SSO redirection
 	 *
-	 * @param bool $force Forces SSO authentication if true, defaults to True
+	 * @return bool Forces SSO authentication if true, defaults to True
 	 */
 	if ( ! apply_filters( 'wpsimplesaml_force', true ) ) {
 		return;
@@ -197,6 +197,11 @@ function instance() {
 
 	require_once __DIR__ . '/vendor/onelogin/php-saml/_toolkit_loader.php';
 
+	/**
+	 * Filters configuration of the plugin, the onelogin php-saml way
+	 *
+	 * @return array php-saml configuration array
+	 */
 	$config = apply_filters( 'wpsimplesaml_config', [] );
 
 	if ( empty( $config ) ) {
@@ -373,6 +378,13 @@ function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
 			'user_email'    => $email,
 		];
 
+		/**
+		 * Filters user data before insertion to the database
+		 *
+		 * @param array $attributes Attributes array coming from SAML Response object
+		 *
+		 * @return array User data to be used with wp_insert_user
+		 */
 		$user_data = apply_filters( 'wpsimplesaml_user_data', $user_data, $attributes );
 
 		$user_id = wp_insert_user( $user_data );
@@ -432,7 +444,7 @@ function get_attribute_map() {
  */
 function map_user_roles( $user, array $attributes ) {
 	/**
-	 * Filter to allow role mapping
+	 * Filters to allow role mapping
 	 *
 	 * @deprecated Remove this callback from `wpsimplesaml_user_created` instead
 	 *
@@ -445,7 +457,7 @@ function map_user_roles( $user, array $attributes ) {
 	}
 
 	/**
-	 * Filter the role to apply for the new user
+	 * Filters the role to apply for the new user
 	 *
 	 * Use `superadmin` to add the user to network super admins
 	 *
@@ -541,7 +553,12 @@ function cross_site_sso_redirect( $url ) {
 	<form action="<?php echo esc_url( $sso_url ); ?>" method="post" id="sso_form">
 		<input type="hidden" name="SAMLResponse" value="<?php echo esc_attr( $_POST['SAMLResponse'] ); ?>">
 		<input type="hidden" name="RelayState" value="<?php echo esc_attr( $_POST['RelayState'] ); ?>">
-		<?php do_action( 'wpsimplesaml_cross_sso_form_inputs' ); ?>
+		<?php
+		/**
+		 * Use to add additional data to the cross site SSO login redirect
+		 */
+		do_action( 'wpsimplesaml_cross_sso_form_inputs' );
+		?>
 	</form>
 	<?php // @codingStandardsIgnoreEnd ?>
 
