@@ -322,25 +322,31 @@ function get_sso_user() {
 		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
 	}
 
-	// Assumes the email is the unique identifier set in SAML IDP
-	$email = apply_filters( 'wpsimplesaml_email', filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL ), $saml );
-
-	if ( apply_filters( 'wpsimplesaml_verify_email', true ) && ! $email ) {
-		return new \WP_Error( 'invalid-email', esc_html__( 'Error: Invalid email passed. Contact your administrator.', 'wp-simple-saml' ) );
-	}
-
-	return get_or_create_wp_user( $email, $saml->getAttributes() );
+	return get_or_create_wp_user( $saml );
 }
 
 /**
  * Create a user and/or update his role based on SAML response
  *
- * @param string $email
- * @param array  $attributes
+ * @param \OneLogin_Saml2_Auth $saml
  *
  * @return \WP_User|\WP_Error
  */
-function get_or_create_wp_user( $email, array $attributes = [] ) {
+function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
+
+	$map = get_attribute_map();
+	$attributes = $saml->getAttributes();
+
+	// Check whether email is the unique identifier set in SAML IDP
+	$is_email_auth = 'emailAddress' === substr( $saml->getNameIdFormat(), - strlen( 'emailAddress' ) );
+
+	if ( $is_email_auth ) {
+		$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
+	} else {
+		$email_field = $map['user_email'];
+		$email       = current( (array) $saml->getAttribute( $email_field ) );
+	}
+
 	/**
 	 * Filters matched user, allows matching via other SAML attributes
 	 *
@@ -354,12 +360,12 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
 	// No user yet ? lets create a new one.
 	if ( empty( $user ) ) {
 
-		$first_name = isset( $attributes['fname'] ) && is_array( $attributes['fname'] ) ? reset( $attributes['fname'] ) : '';
-		$last_name  = isset( $attributes['lname'] ) && is_array( $attributes['lname'] ) ? reset( $attributes['lname'] ) : '';
+		$first_name = isset( $map['first_name'], $attributes[ $map['first_name'] ] ) && is_array( $attributes[ $map['first_name'] ] ) ? reset( $attributes[ $map['first_name'] ] ) : '';
+		$last_name  = isset( $map['last_name'], $attributes[ $map['last_name'] ] ) && is_array( $attributes[ $map['last_name'] ] ) ? reset( $attributes[ $map['last_name'] ] ) : '';
 
 		$user_data = [
 			'ID'            => null,
-			'user_login'    => $email,
+			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
 			'user_pass'     => wp_generate_password(),
 			'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
 			'first_name'    => $first_name,
@@ -391,6 +397,29 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
 	}
 
 	return $user;
+}
+
+/**
+ * Get mapping of SAML attributes to required fields for creating users
+ *
+ * @return array
+ */
+function get_attribute_map() {
+	$map = [
+		'user_login' => 'email',
+		'user_email' => 'email',
+		'first_name' => 'firstName',
+		'last_name'  => 'lastName',
+	];
+
+	/**
+	 * Filters mapping of attributes from SAML response to user data attributes
+	 *
+	 * @return array
+	 */
+	$map = apply_filters( 'wpsimplesaml_attribute_mapping', $map );
+
+	return $map;
 }
 
 /**
