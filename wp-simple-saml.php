@@ -261,6 +261,20 @@ function action_verify() {
 		// Set authentication cookie
 		signon( $user );
 
+		// Check if we need to add the user to the site if he's not there already
+		if ( ! is_user_member_of_blog( $user->ID, get_current_blog_id() ) ) {
+			/**
+			 * Filters whether users should be added to sites they've not initially signed in to
+			 *
+			 * @param \WP_User $user
+			 *
+			 * @return bool Whether to automatically add the user to the site using the default role
+			 */
+			if ( apply_filters( 'wpsimplesaml_add_users_to_site', true, $user ) ) {
+				add_user_to_blog( get_current_blog_id(), $user->ID, get_option( 'default_role' ) );
+			}
+		}
+
 		wp_safe_redirect( $redirect_url );
 		exit;
 	} elseif ( is_wp_error( $user ) ) {
