@@ -576,7 +576,12 @@ function get_redirection_url() {
  * @return bool
  */
 function is_sso_enabled_network_wide() {
-	return is_multisite() && is_plugin_active_for_network( plugin_basename( WP_SIMPLE_SAML_PLUGIN_FILE ) );
+	/**
+	 * Filters whether the plugin is activated network-wide, ie when activated via code
+	 *
+	 * @return bool
+	 */
+	return apply_filters( 'wpsimplesaml_network_activated', is_multisite() && is_plugin_active_for_network( plugin_basename( WP_SIMPLE_SAML_PLUGIN_FILE ) ) );
 }
 
 /**
