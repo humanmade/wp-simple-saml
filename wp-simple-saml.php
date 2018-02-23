@@ -37,7 +37,7 @@ namespace HumanMade\SimpleSaml;
 function bootstrap() {
 	add_action( 'init', __NAMESPACE__ . '\\rewrites' );
 	add_action( 'template_redirect', __NAMESPACE__ . '\\endpoint', 9 );
-	add_action( 'login_form', __NAMESPACE__ . '\\login_form_link' );
+	add_action( 'login_message', __NAMESPACE__ . '\\login_form_link' );
 	add_action( 'wp_authenticate', __NAMESPACE__ . '\\authenticate_with_sso' );
 	add_action( 'wp_logout', __NAMESPACE__ . '\\go_home' );
 
