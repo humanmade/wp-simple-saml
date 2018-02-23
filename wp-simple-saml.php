@@ -358,9 +358,13 @@ function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
 	 * @param string $email      Email from SAMLResponse
 	 * @param array  $attributes SAML Attributes parsed from SAMLResponse
 	 *
-	 * @return false|\WP_User User object or false if not found
+	 * @return null|false|\WP_User User object or false if not found
 	 */
-	$user = apply_filters( 'wpsimplesaml_match_user', get_user_by( 'email', $email ), $email, $attributes );
+	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes );
+
+	if ( null === $user ) {
+		$user = get_user_by( 'email', $email );
+	}
 
 	// No user yet ? lets create a new one.
 	if ( empty( $user ) ) {
