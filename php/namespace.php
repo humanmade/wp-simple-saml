@@ -475,7 +475,7 @@ function cross_site_sso_redirect( $url ) {
 	 */
 	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', [], $host, $url );
 	// Allow local hosts ending in .local
-	if ( in_array( end( explode( '.', $host ) ), [ 'local' ], true ) ) {
+	if ( '.local' === substr( $host, - strlen( '.local' ) ) ) {
 		$allowed_hosts[] = $host;
 	}
 	if ( empty( $allowed_hosts ) || ! in_array( $host, $allowed_hosts, true ) ) {
