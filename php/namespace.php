@@ -48,10 +48,8 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\action_verify' );
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
-	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles' );
+	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
 }
-
-add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 
 /**
  * Register SSO endpoint
@@ -132,29 +130,17 @@ function login_form_link() {
 }
 
 /**
- * Replace WordPress Login
+ * Replace WordPress login flow, ie: Force SSO login
  *
  * @action wp_authenticate
  */
 function authenticate_with_sso() {
-
-	/**
-	 * Filter whether the plugin should intercepts this request or not, mainly used when SSO is forced
-	 *
-	 * Used to whitelist IP/etc via a custom function, return true to skip -forced- SSO
-	 *
-	 * @param bool $ignore Disables SSO handling if true
-	 */
-	if ( apply_filters( 'wpsimplesaml_ignore', false ) ) {
-		return;
-	}
-
 	/**
 	 * Filter whether the plugin should force SSO redirection
 	 *
 	 * @param bool $force Forces SSO authentication if true, defaults to True
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_force', true ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_force', false ) ) {
 		return;
 	}
 
@@ -190,7 +176,7 @@ function instance() {
 		return $instance;
 	}
 
-	require_once __DIR__ . '/vendor/onelogin/php-saml/_toolkit_loader.php';
+	require_once dirname( WP_SIMPLE_SAML_PLUGIN_FILE ) . '/vendor/onelogin/php-saml/_toolkit_loader.php';
 
 	$config = apply_filters( 'wpsimplesaml_config', [] );
 
@@ -375,10 +361,13 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
  *
  * @action wpsimplesaml_user_created
  *
+ * @see get_user_roles_from_sso()
+ *
  * @param \WP_User $user       User object
  * @param array    $attributes SAML Attributes
  */
 function map_user_roles( $user, array $attributes ) {
+
 	/**
 	 * Filter to allow role mapping
 	 *
@@ -388,34 +377,20 @@ function map_user_roles( $user, array $attributes ) {
 	 *
 	 * @return bool Allow user role mapping
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_manage_roles', true, $user ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_manage_roles', false, $user ) ) {
 		return;
 	}
 
-	/**
-	 * Filter the role to apply for the new user
-	 *
-	 * Use `superadmin` to add the user to network super admins
-	 *
-	 * @param array    $attributes SAML attributes
-	 * @param int      $user_id    User ID
-	 * @param \WP_User $user       User object
-	 *
-	 * @return string|array WP Role(s) to apply to the user
-	 */
-	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
-	$roles = array_unique( array_filter( $roles ) );
+	$roles = get_user_roles_from_sso( $user, $attributes );
 
-	if ( ! empty( $roles ) ) {
-		// For some reason get_current_blog_id doesn't return the proper value at this stage
-		$blog_id = get_blog_id( trailingslashit( $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) ); // @codingStandardsIgnoreLine
-		if ( $blog_id && get_current_blog_id() !== $blog_id ) {
-			$user->for_blog( $blog_id );
-		}
+	if ( empty( $roles ) ) {
+		return;
+	}
 
-		// Manage super admin flag
-		if ( in_array( 'superadmin', $roles, true ) ) {
-			$roles = array_diff( $roles, [ 'superadmin' ] );
+	// Manage super admin flag
+	if ( is_sso_enabled_network_wide() ) {
+		if ( isset( $roles['network'] ) && in_array( 'superadmin', $roles['network'], true ) ) {
+			$roles = array_diff( $roles['network'], [ 'superadmin' ] );
 
 			if ( ! is_super_admin( $user->ID ) ) {
 				grant_super_admin( $user->ID );
@@ -426,8 +401,45 @@ function map_user_roles( $user, array $attributes ) {
 			}
 		}
 
+		// If we have specific roles for each site
+		if ( isset( $roles['sites'] ) ) {
+			$new_site_ids = array_unique( array_filter( array_map( 'absint', array_keys( $roles['sites'] ) ) ) );
+			$old_site_ids = array_map( 'absint', array_keys( get_blogs_of_user( $user->ID ) ) );
+
+			// Remove the user from all other sites he shouldn't have access to
+			foreach ( array_diff( $old_site_ids, $new_site_ids ) as $site_id ) {
+				remove_user_from_blog( $user->ID, $site_id );
+			}
+
+			// Add the user to the defined sites, and assign proper role(s)
+			foreach ( $roles['sites'] as $site_id => $site_roles ) {
+				switch_to_blog( $site_id );
+				$user->for_blog( $site_id );
+				$user->set_role( reset( $site_roles ) );
+
+				foreach ( array_slice( $site_roles, 1 ) as $role ) {
+					$user->add_role( $role );
+				}
+			}
+		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
+			$all_site_ids = new \WP_Site_Query( [
+				'network' => get_network()->id,
+				'fields'  => 'ids',
+			] );
+
+			foreach ( $all_site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				$user->for_blog( $site_id );
+				$user->set_role( reset( $roles['network'] ) );
+
+				foreach ( array_slice( $roles['network'], 1 ) as $role ) {
+					$user->add_role( $role );
+				}
+			}
+		}
+	} else {
 		$user->set_role( reset( $roles ) );
-		foreach ( $roles as $role ) {
+		foreach ( array_slice( $roles, 1 ) as $role ) {
 			$user->add_role( $role );
 		}
 	}
@@ -452,6 +464,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host = wp_parse_url( $url, PHP_URL_HOST );
+
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
 	 *
@@ -461,6 +474,10 @@ function cross_site_sso_redirect( $url ) {
 	 * @return bool|array List of hosts to whitelist, or false to disallow all
 	 */
 	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', [], $host, $url );
+	// Allow local hosts ending in .local
+	if ( '.local' === substr( $host, - strlen( '.local' ) ) ) {
+		$allowed_hosts[] = $host;
+	}
 	if ( empty( $allowed_hosts ) || ! in_array( $host, $allowed_hosts, true ) ) {
 		/* translators: %s is domain of the blacklisted site */
 		wp_die( sprintf( esc_html__( '%s is not whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
@@ -551,4 +568,83 @@ function get_redirection_url() {
 	}
 
 	return esc_url_raw( $redirect );
+}
+
+/**
+ * Check if the plugin is activated network-wide
+ *
+ * @return bool
+ */
+function is_sso_enabled_network_wide() {
+	/**
+	 * Filters whether the plugin is activated network-wide, ie when activated via code
+	 *
+	 * @return bool
+	 */
+	return apply_filters( 'wpsimplesaml_network_activated', is_multisite() && is_plugin_active_for_network( plugin_basename( WP_SIMPLE_SAML_PLUGIN_FILE ) ) );
+}
+
+/**
+ * Transform the roles array into a proper network roles array
+ *
+ * @param \WP_User $user
+ * @param array    $attributes
+ *
+ * @return array
+ */
+function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
+
+	/**
+	 * Filter the role to apply for the new user
+	 *
+	 * Example for single sites:
+	 * [ 'editor', 'job_admin' ]
+	 * 'administrator'
+	 *
+	 * Examples for multisite networks:
+	 *
+	 * - To apply a role for all sites in the network
+	 * [ 'network' => [ 'administrator' ] ]
+	 * 'administrator'
+	 *
+	 * - To grant network superadmin role
+	 * [ 'network' => [ 'superadmin' ] ]
+	 * 'superadmin'
+	 *
+	 * - To choose specific roles for each site ( user will be removed from omitted sites )
+	 * [ 'sites' => [ 1 => [ 'administrator' ], 2 => [ 'editor' ] ]
+	 *
+	 * @param array    $attributes SAML attributes
+	 * @param int      $user_id    User ID
+	 * @param \WP_User $user       User object
+	 *
+	 * @return string|array WP Role(s) to apply to the user
+	 */
+	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
+	$roles = array_unique( array_filter( $roles ) );
+
+
+	if ( empty( $roles ) ) {
+		return [];
+	}
+
+	if ( is_sso_enabled_network_wide() ) {
+		$network_roles = [];
+
+		// If this is a multisite, the roles array may contain a 'network' key and a 'sites' key. Otherwise, if
+		// it is a flat array, use it to add the roles for all sites
+		if ( is_numeric( key( $roles ) ) ) { // Not an associative array ?
+			if ( is_array( current( $roles ) ) ) {
+				// Nested array? then it is a `sites` definition, expect array of roles for each site
+				$network_roles['sites'] = $roles;
+			} else {
+				// Flat array of strings ? then expect it is roles to apply on all sites
+				$network_roles['network'] = $roles;
+			}
+		} elseif ( ! isset( $roles['network'] ) && ! isset( $roles['sites'] ) ) { // Associative but no 'network' or 'sites' keys ?
+			$network_roles = [];
+		}
+	}
+
+	return $network_roles ?? (array) $roles;
 }
