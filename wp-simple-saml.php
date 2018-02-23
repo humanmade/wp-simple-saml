@@ -123,7 +123,7 @@ function login_form_link() {
 	$redirect_url = get_redirection_url();
 
 	$output = sprintf(
-		'<p><a href="%s" id="login-via-sso">%s</a></p>',
+		'<div style="padding:8px; background: #fff; text-align: center;"><a href="%s" id="login-via-sso">%s</a></div>',
 		esc_url( add_query_arg( 'redirect_to', urlencode( $redirect_url ), home_url( 'sso/login/' ) ) ), // @codingStandardsIgnoreLine
 		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( 'Login via SSO', 'wp-simple-saml' ) ) )
 	);
