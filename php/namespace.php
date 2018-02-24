@@ -37,7 +37,7 @@ namespace HumanMade\SimpleSaml;
 function bootstrap() {
 	add_action( 'init', __NAMESPACE__ . '\\rewrites' );
 	add_action( 'template_redirect', __NAMESPACE__ . '\\endpoint', 9 );
-	add_action( 'login_form', __NAMESPACE__ . '\\login_form_link' );
+	add_action( 'login_message', __NAMESPACE__ . '\\login_form_link' );
 	add_action( 'wp_authenticate', __NAMESPACE__ . '\\authenticate_with_sso' );
 	add_action( 'wp_logout', __NAMESPACE__ . '\\go_home' );
 
@@ -48,10 +48,8 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\action_verify' );
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
-	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles' );
+	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
 }
-
-add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 
 /**
  * Register SSO endpoint
@@ -112,7 +110,7 @@ function endpoint() {
 function login_form_link() {
 
 	/**
-	 * Filter whether we should show the SSO login link in login form
+	 * Filters whether we should show the SSO login link in login form
 	 *
 	 * @return bool  Forces SSO authentication if true, defaults to True
 	 */
@@ -123,38 +121,31 @@ function login_form_link() {
 	$redirect_url = get_redirection_url();
 
 	$output = sprintf(
-		'<p><a href="%s" id="login-via-sso">%s</a></p>',
+		'<div style="padding:8px; background: #fff; text-align: center;"><a href="%s" id="login-via-sso">%s</a></div>',
 		esc_url( add_query_arg( 'redirect_to', urlencode( $redirect_url ), home_url( 'sso/login/' ) ) ), // @codingStandardsIgnoreLine
-		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( 'Login via SSO', 'wp-simple-saml' ) ) )
+		/**
+		 * Filters the SSO login button text
+		 *
+		 * @return string Text to be used for the login button
+		 */
+		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( 'SSO Login', 'wp-simple-saml' ) ) )
 	);
 
 	echo $output; // WPCS: xss ok
 }
 
 /**
- * Replace WordPress Login
+ * Replace WordPress login flow, ie: Force SSO login
  *
  * @action wp_authenticate
  */
 function authenticate_with_sso() {
-
 	/**
-	 * Filter whether the plugin should intercepts this request or not, mainly used when SSO is forced
+	 * Filters whether the plugin should force SSO redirection
 	 *
-	 * Used to whitelist IP/etc via a custom function, return true to skip -forced- SSO
-	 *
-	 * @param bool $ignore Disables SSO handling if true
+	 * @return bool Forces SSO authentication if true, defaults to True
 	 */
-	if ( apply_filters( 'wpsimplesaml_ignore', false ) ) {
-		return;
-	}
-
-	/**
-	 * Filter whether the plugin should force SSO redirection
-	 *
-	 * @param bool $force Forces SSO authentication if true, defaults to True
-	 */
-	if ( ! apply_filters( 'wpsimplesaml_force', true ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_force', false ) ) {
 		return;
 	}
 
@@ -190,8 +181,13 @@ function instance() {
 		return $instance;
 	}
 
-	require_once __DIR__ . '/vendor/onelogin/php-saml/_toolkit_loader.php';
+	require_once dirname( WP_SIMPLE_SAML_PLUGIN_FILE ) . '/vendor/onelogin/php-saml/_toolkit_loader.php';
 
+	/**
+	 * Filters configuration of the plugin, the onelogin php-saml way
+	 *
+	 * @return array php-saml configuration array
+	 */
 	$config = apply_filters( 'wpsimplesaml_config', [] );
 
 	if ( empty( $config ) ) {
@@ -244,6 +240,7 @@ function action_verify() {
 
 	if ( is_user_logged_in() ) {
 		wp_safe_redirect( $redirect_url );
+		exit;
 	}
 
 	if ( empty( $_POST['SAMLResponse'] ) ) { // @codingStandardsIgnoreLine
@@ -255,7 +252,22 @@ function action_verify() {
 		// Set authentication cookie
 		signon( $user );
 
+		// Check if we need to add the user to the site if he's not there already
+		if ( ! is_user_member_of_blog( $user->ID, get_current_blog_id() ) ) {
+			/**
+			 * Filters whether users should be added to sites they've not initially signed in to
+			 *
+			 * @param \WP_User $user
+			 *
+			 * @return bool Whether to automatically add the user to the site using the default role
+			 */
+			if ( apply_filters( 'wpsimplesaml_add_users_to_site', true, $user ) ) {
+				add_user_to_blog( get_current_blog_id(), $user->ID, get_option( 'default_role' ) );
+			}
+		}
+
 		wp_safe_redirect( $redirect_url );
+		exit;
 	} elseif ( is_wp_error( $user ) ) {
 		wp_die( esc_html( $user->get_error_message() ) );
 	}
@@ -301,50 +313,69 @@ function get_sso_user() {
 		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
 	}
 
-	// Assumes the email is the unique identifier set in SAML IDP
-	$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
-
-	if ( ! $email ) {
-		return new \WP_Error( 'invalid-email', esc_html__( 'Error: Invalid email passed. Contact your administrator.', 'wp-simple-saml' ) );
-	}
-
-	return get_or_create_wp_user( $email, $saml->getAttributes() );
+	return get_or_create_wp_user( $saml );
 }
 
 /**
  * Create a user and/or update his role based on SAML response
  *
- * @param string $email
- * @param array  $attributes
+ * @param \OneLogin_Saml2_Auth $saml
  *
  * @return \WP_User|\WP_Error
  */
-function get_or_create_wp_user( $email, array $attributes = [] ) {
+function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
+
+	$map = get_attribute_map();
+	$attributes = $saml->getAttributes();
+
+	// Check whether email is the unique identifier set in SAML IDP
+	$is_email_auth = 'emailAddress' === substr( $saml->getNameIdFormat(), - strlen( 'emailAddress' ) );
+
+	if ( $is_email_auth ) {
+		$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
+	} else {
+		$email_field = $map['user_email'];
+		$email       = current( (array) $saml->getAttribute( $email_field ) );
+	}
+
 	/**
 	 * Filters matched user, allows matching via other SAML attributes
 	 *
 	 * @param string $email      Email from SAMLResponse
 	 * @param array  $attributes SAML Attributes parsed from SAMLResponse
 	 *
-	 * @return false|\WP_User User object or false if not found
+	 * @return null|false|\WP_User User object or false if not found
 	 */
-	$user = apply_filters( 'wpsimplesaml_match_user', get_user_by( 'email', $email ), $email, $attributes );
+	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes );
+
+	if ( null === $user ) {
+		$user = get_user_by( 'email', $email );
+	}
 
 	// No user yet ? lets create a new one.
 	if ( empty( $user ) ) {
 
-		$first_name = isset( $attributes['fname'] ) && is_array( $attributes['fname'] ) ? reset( $attributes['fname'] ) : '';
-		$last_name  = isset( $attributes['lname'] ) && is_array( $attributes['lname'] ) ? reset( $attributes['lname'] ) : '';
+		$first_name = isset( $map['first_name'], $attributes[ $map['first_name'] ] ) && is_array( $attributes[ $map['first_name'] ] ) ? reset( $attributes[ $map['first_name'] ] ) : '';
+		$last_name  = isset( $map['last_name'], $attributes[ $map['last_name'] ] ) && is_array( $attributes[ $map['last_name'] ] ) ? reset( $attributes[ $map['last_name'] ] ) : '';
 
 		$user_data = [
 			'ID'            => null,
-			'user_login'    => $email,
+			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
 			'user_pass'     => wp_generate_password(),
 			'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
 			'first_name'    => $first_name,
 			'last_name'     => $last_name,
 			'user_email'    => $email,
 		];
+
+		/**
+		 * Filters user data before insertion to the database
+		 *
+		 * @param array $attributes Attributes array coming from SAML Response object
+		 *
+		 * @return array User data to be used with wp_insert_user
+		 */
+		$user_data = apply_filters( 'wpsimplesaml_user_data', $user_data, $attributes );
 
 		$user_id = wp_insert_user( $user_data );
 
@@ -371,16 +402,42 @@ function get_or_create_wp_user( $email, array $attributes = [] ) {
 }
 
 /**
+ * Get mapping of SAML attributes to required fields for creating users
+ *
+ * @return array
+ */
+function get_attribute_map() {
+	$map = [
+		'user_login' => 'email',
+		'user_email' => 'email',
+		'first_name' => 'firstName',
+		'last_name'  => 'lastName',
+	];
+
+	/**
+	 * Filters mapping of attributes from SAML response to user data attributes
+	 *
+	 * @return array
+	 */
+	$map = apply_filters( 'wpsimplesaml_attribute_mapping', $map );
+
+	return $map;
+}
+
+/**
  * Map user roles after creation
  *
  * @action wpsimplesaml_user_created
+ *
+ * @see get_user_roles_from_sso()
  *
  * @param \WP_User $user       User object
  * @param array    $attributes SAML Attributes
  */
 function map_user_roles( $user, array $attributes ) {
+
 	/**
-	 * Filter to allow role mapping
+	 * Filters to allow role mapping
 	 *
 	 * @deprecated Remove this callback from `wpsimplesaml_user_created` instead
 	 *
@@ -388,34 +445,20 @@ function map_user_roles( $user, array $attributes ) {
 	 *
 	 * @return bool Allow user role mapping
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_manage_roles', true, $user ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_manage_roles', false, $user ) ) {
 		return;
 	}
 
-	/**
-	 * Filter the role to apply for the new user
-	 *
-	 * Use `superadmin` to add the user to network super admins
-	 *
-	 * @param array    $attributes SAML attributes
-	 * @param int      $user_id    User ID
-	 * @param \WP_User $user       User object
-	 *
-	 * @return string|array WP Role(s) to apply to the user
-	 */
-	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
-	$roles = array_unique( array_filter( $roles ) );
+	$roles = get_user_roles_from_sso( $user, $attributes );
 
-	if ( ! empty( $roles ) ) {
-		// For some reason get_current_blog_id doesn't return the proper value at this stage
-		$blog_id = get_blog_id( trailingslashit( $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ) ); // @codingStandardsIgnoreLine
-		if ( $blog_id && get_current_blog_id() !== $blog_id ) {
-			$user->for_blog( $blog_id );
-		}
+	if ( empty( $roles ) ) {
+		return;
+	}
 
-		// Manage super admin flag
-		if ( in_array( 'superadmin', $roles, true ) ) {
-			$roles = array_diff( $roles, [ 'superadmin' ] );
+	// Manage super admin flag
+	if ( is_sso_enabled_network_wide() ) {
+		if ( isset( $roles['network'] ) && in_array( 'superadmin', $roles['network'], true ) ) {
+			$roles = array_diff( $roles['network'], [ 'superadmin' ] );
 
 			if ( ! is_super_admin( $user->ID ) ) {
 				grant_super_admin( $user->ID );
@@ -426,8 +469,45 @@ function map_user_roles( $user, array $attributes ) {
 			}
 		}
 
+		// If we have specific roles for each site
+		if ( isset( $roles['sites'] ) ) {
+			$new_site_ids = array_unique( array_filter( array_map( 'absint', array_keys( $roles['sites'] ) ) ) );
+			$old_site_ids = array_map( 'absint', array_keys( get_blogs_of_user( $user->ID ) ) );
+
+			// Remove the user from all other sites he shouldn't have access to
+			foreach ( array_diff( $old_site_ids, $new_site_ids ) as $site_id ) {
+				remove_user_from_blog( $user->ID, $site_id );
+			}
+
+			// Add the user to the defined sites, and assign proper role(s)
+			foreach ( $roles['sites'] as $site_id => $site_roles ) {
+				switch_to_blog( $site_id );
+				$user->for_blog( $site_id );
+				$user->set_role( reset( $site_roles ) );
+
+				foreach ( array_slice( $site_roles, 1 ) as $role ) {
+					$user->add_role( $role );
+				}
+			}
+		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
+			$all_site_ids = new \WP_Site_Query( [
+				'network' => get_network()->id,
+				'fields'  => 'ids',
+			] );
+
+			foreach ( $all_site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				$user->for_blog( $site_id );
+				$user->set_role( reset( $roles['network'] ) );
+
+				foreach ( array_slice( $roles['network'], 1 ) as $role ) {
+					$user->add_role( $role );
+				}
+			}
+		}
+	} else {
 		$user->set_role( reset( $roles ) );
-		foreach ( $roles as $role ) {
+		foreach ( array_slice( $roles, 1 ) as $role ) {
 			$user->add_role( $role );
 		}
 	}
@@ -452,18 +532,23 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host = wp_parse_url( $url, PHP_URL_HOST );
+
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
 	 *
 	 * @param string $host Host name
 	 * @param string $url  Redirection URL
 	 *
-	 * @return bool|array List of hosts to whitelist, or false to disallow all
+	 * @return bool
 	 */
 	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', [], $host, $url );
+	// Allow local hosts ending in .local
+	if ( '.local' === substr( $host, - strlen( '.local' ) ) ) {
+		$allowed_hosts[] = $host;
+	}
 	if ( empty( $allowed_hosts ) || ! in_array( $host, $allowed_hosts, true ) ) {
 		/* translators: %s is domain of the blacklisted site */
-		wp_die( sprintf( esc_html__( '%s is not whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
+		wp_die( sprintf( esc_html__( '%s is not a whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
 	}
 
 	// Workaround for sub-directory installs, as we usually redirect to admin urls
@@ -489,7 +574,12 @@ function cross_site_sso_redirect( $url ) {
 	<form action="<?php echo esc_url( $sso_url ); ?>" method="post" id="sso_form">
 		<input type="hidden" name="SAMLResponse" value="<?php echo esc_attr( $_POST['SAMLResponse'] ); ?>">
 		<input type="hidden" name="RelayState" value="<?php echo esc_attr( $_POST['RelayState'] ); ?>">
-		<?php do_action( 'wpsimplesaml_cross_sso_form_inputs' ); ?>
+		<?php
+		/**
+		 * Use to add additional data to the cross site SSO login redirect
+		 */
+		do_action( 'wpsimplesaml_cross_sso_form_inputs' );
+		?>
 	</form>
 	<?php // @codingStandardsIgnoreEnd ?>
 
@@ -551,4 +641,83 @@ function get_redirection_url() {
 	}
 
 	return esc_url_raw( $redirect );
+}
+
+/**
+ * Check if the plugin is activated network-wide
+ *
+ * @return bool
+ */
+function is_sso_enabled_network_wide() {
+	/**
+	 * Filters whether the plugin is activated network-wide, ie when activated via code
+	 *
+	 * @return bool
+	 */
+	return apply_filters( 'wpsimplesaml_network_activated', is_multisite() && is_plugin_active_for_network( plugin_basename( WP_SIMPLE_SAML_PLUGIN_FILE ) ) );
+}
+
+/**
+ * Transform the roles array into a proper network roles array
+ *
+ * @param \WP_User $user
+ * @param array    $attributes
+ *
+ * @return array
+ */
+function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
+
+	/**
+	 * Filter the role to apply for the new user
+	 *
+	 * Example for single sites:
+	 * [ 'editor', 'job_admin' ]
+	 * 'administrator'
+	 *
+	 * Examples for multisite networks:
+	 *
+	 * - To apply a role for all sites in the network
+	 * [ 'network' => [ 'administrator' ] ]
+	 * 'administrator'
+	 *
+	 * - To grant network superadmin role
+	 * [ 'network' => [ 'superadmin' ] ]
+	 * 'superadmin'
+	 *
+	 * - To choose specific roles for each site ( user will be removed from omitted sites )
+	 * [ 'sites' => [ 1 => [ 'administrator' ], 2 => [ 'editor' ] ]
+	 *
+	 * @param array    $attributes SAML attributes
+	 * @param int      $user_id    User ID
+	 * @param \WP_User $user       User object
+	 *
+	 * @return string|array WP Role(s) to apply to the user
+	 */
+	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
+	$roles = array_unique( array_filter( $roles ) );
+
+
+	if ( empty( $roles ) ) {
+		return [];
+	}
+
+	if ( is_sso_enabled_network_wide() ) {
+		$network_roles = [];
+
+		// If this is a multisite, the roles array may contain a 'network' key and a 'sites' key. Otherwise, if
+		// it is a flat array, use it to add the roles for all sites
+		if ( is_numeric( key( $roles ) ) ) { // Not an associative array ?
+			if ( is_array( current( $roles ) ) ) {
+				// Nested array? then it is a `sites` definition, expect array of roles for each site
+				$network_roles['sites'] = $roles;
+			} else {
+				// Flat array of strings ? then expect it is roles to apply on all sites
+				$network_roles['network'] = $roles;
+			}
+		} elseif ( ! isset( $roles['network'] ) && ! isset( $roles['sites'] ) ) { // Associative but no 'network' or 'sites' keys ?
+			$network_roles = [];
+		}
+	}
+
+	return $network_roles ?? (array) $roles;
 }
