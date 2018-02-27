@@ -31,6 +31,7 @@ namespace HumanMade\SimpleSaml;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
+require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/php/namespace.php';
 require_once __DIR__ . '/php/admin.php';
 
