@@ -195,6 +195,37 @@ function settings_fields() {
 		</select>
 		<?php
 	}, $settings_section, 'sso_settings' );
+
+	add_settings_field( 'sso_config_validate', __( 'SSO Config validation', 'wp-simple-saml' ), function() {
+		$path     = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+		$config   = apply_filters( 'wpsimplesaml_config', [] );
+		$instance = instance();
+		$errors   = $instance ? $instance->getErrors() : null;
+
+		printf(
+			'<strong>%s</strong>: %s',
+			esc_html( 'XML Path' ),
+			$path ? esc_html( $path ) : esc_html( 'No' )
+		);
+
+		printf(
+			'<br/><strong>%s</strong>: %s',
+			esc_html( 'Passed config' ),
+			! empty( $config ) ? esc_html( 'Yes' ) : esc_html( 'No' )
+		);
+
+		printf(
+			'<br/><strong>%s</strong>: %s',
+			esc_html( 'Valid config' ),
+			$instance ? esc_html( 'Yes' ) : esc_html( 'No' )
+		);
+
+		printf(
+			'<br/><strong>%s</strong>: %s',
+			esc_html( 'Errors' ),
+			$errors ? sprintf( '<br/><code>%s</code>', wp_json_encode( $errors ) ) : esc_html( 'No' )
+		);
+	}, $settings_section, 'sso_settings' );
 }
 
 /**
