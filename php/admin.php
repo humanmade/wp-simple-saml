@@ -51,7 +51,7 @@ function get_config() {
 			 *
 			 * @return string XML string for IdP metadata
 			 */
-			$idp_xml  = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+			$idp_xml  = trim( apply_filters( 'wpsimplesaml_idp_metadata_xml', '' ) );
 			$settings = OneLogin_Saml2_IdPMetadataParser::parseXML( $idp_xml );
 		}
 	} catch ( \Exception $e ) {
