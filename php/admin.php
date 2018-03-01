@@ -11,6 +11,7 @@ use OneLogin_Saml2_IdPMetadataParser;
  */
 function admin_bootstrap() {
 	add_filter( 'wpsimplesaml_config', __NAMESPACE__ . '\\get_config' );
+	add_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
 	add_action( 'admin_notices', __NAMESPACE__ . '\\config_admin_notice' );
 
 	add_action( 'admin_init', __NAMESPACE__ . '\\settings_fields' );
@@ -24,7 +25,7 @@ function admin_bootstrap() {
 /**
  * Return WP Simple SAML configurations
  *
- * @return array Site-specific SSO settings.
+ * @return array|\WP_Error Site-specific SSO settings, or WP error if an exception happens while processing the XML
  */
 function get_config() {
 	// Only one authority can be registered in IdP, allow overriding this via settings
@@ -32,15 +33,29 @@ function get_config() {
 	$sp_base_url = trailingslashit( $sp_home_url ) . 'sso/';
 	$settings    = [];
 
-	/**
-	 * Filters the XML metadata file for IdP authority
-	 *
-	 * @return string Location of the metadata XML file
-	 */
-	$idp_xml_file = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+	try {
+		/**
+		 * Filters the XML metadata file for IdP authority
+		 *
+		 * @return string Location of the metadata XML file
+		 */
+		$idp_xml_file = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
 
-	if ( $idp_xml_file && file_exists( $idp_xml_file ) ) {
-		$settings = OneLogin_Saml2_IdPMetadataParser::parseFileXML( $idp_xml_file );
+		if ( $idp_xml_file && file_exists( $idp_xml_file ) ) {
+			$settings = OneLogin_Saml2_IdPMetadataParser::parseFileXML( $idp_xml_file );
+		}
+
+		if ( empty( $idp_xml_file ) ) {
+			/**
+			 * Filters the XML metadata for IdP authority
+			 *
+			 * @return string XML string for IdP metadata
+			 */
+			$idp_xml  = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+			$settings = OneLogin_Saml2_IdPMetadataParser::parseXML( $idp_xml );
+		}
+	} catch ( \Exception $e ) {
+		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [ 'errors' => $e->getMessage() ] );
 	}
 
 	/**
@@ -66,6 +81,19 @@ function get_config() {
 	];
 
 	return $settings;
+}
+
+/**
+ * Retrieves IdP metadata from network options, if specified
+ *
+ * @param string $default
+ *
+ * @return array|string
+ */
+function get_config_from_db( $default ) {
+	$value = get_sso_settings( 'sso_idp_metadata' );
+
+	return $value ? $value : $default;
 }
 
 /**
@@ -107,6 +135,7 @@ function get_sso_settings( $option = null ) {
 		'sso_debug'           => 0,
 		'sso_sp_base'         => is_sso_enabled_network_wide() ? get_blog_details( 'home', get_network()->site_id ) : home_url(),
 		'sso_role_management' => '',
+		'sso_idp_metadata'    => '',
 	];
 
 	// Network options is used instead if the plugin is activated network-wide
@@ -181,14 +210,14 @@ function settings_fields() {
 	register_setting( $settings_section, 'sso_role_management', 'sanitize_text' );
 	add_settings_field( 'sso_role_management', __( 'SSO Role Management', 'wp-simple-saml' ), function () use ( $options ) {
 		$value   = $options['sso_role_management'];
-		$options = [
+		$choices = [
 			''        => esc_html__( 'Disabled', 'wp-simple-saml' ),
 			'enabled' => esc_html__( 'Enabled, fails gracefully', 'wp-simple-saml' ),
 			'forced'  => esc_html__( 'Enabled, forced', 'wp-simple-saml' ),
 		];
 		?>
 		<select name="sso_role_management" id="sso_role_management">
-			<?php foreach ( $options as $option_value => $option_label ) : ?>
+			<?php foreach ( $choices as $option_value => $option_label ) : ?>
 				<option
 					value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ); ?>><?php echo esc_html( $option_label ); ?></option>
 			<?php endforeach; ?>
@@ -196,8 +225,30 @@ function settings_fields() {
 		<?php
 	}, $settings_section, 'sso_settings' );
 
+	register_setting( $settings_section, 'sso_idp_metadata', 'sanitize_text' );
+	add_settings_field( 'sso_idp_metadata', __( 'SSO IdP Metadata', 'wp-simple-saml' ), function () use ( $options ) {
+		remove_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+		$xml = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' ) || apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
+		add_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+		if ( $xml ) {
+			esc_html_e( 'Managed via code', 'wp-simple-saml' );
+		} else {
+			$value = $options['sso_idp_metadata'];
+			?>
+			<textarea name="sso_idp_metadata" id="sso_idp_metadata" style="width: 100%; height: 200px" <?php disabled( (bool) $xml ); ?>><?php echo esc_html( $value ); ?></textarea>
+			<?php
+		}
+	}, $settings_section, 'sso_settings' );
+
 	add_settings_field( 'sso_config_validate', __( 'SSO Config validation', 'wp-simple-saml' ), function() {
-		$path     = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+		$path     = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
+		if ( $path ) {
+			$xml = true;
+		} else {
+			remove_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+			$xml = apply_filters( 'wpsimplesaml_idp_metadata_xml', '' );
+			add_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+		}
 		$config   = apply_filters( 'wpsimplesaml_config', [] );
 		$instance = instance();
 		$errors   = $instance ? $instance->getErrors() : null;
@@ -210,14 +261,20 @@ function settings_fields() {
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
+			esc_html( 'XML' ),
+			$xml ? esc_html( 'Yes' ) : esc_html( 'No' )
+		);
+
+		printf(
+			'<br/><strong>%s</strong>: %s',
 			esc_html( 'Passed config' ),
-			! empty( $config ) ? esc_html( 'Yes' ) : esc_html( 'No' )
+			( ! empty( $config ) && ! is_wp_error( $config ) ) ? esc_html( 'Yes' ) : esc_html( 'No' )
 		);
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
 			esc_html( 'Valid config' ),
-			$instance ? esc_html( 'Yes' ) : esc_html( 'No' )
+			( $config && $instance ) ? esc_html( 'Yes' ) : ( is_wp_error( $config ) ? $config->get_error_message() : esc_html( 'No' ) ) // WPCS: @codingStandardsIgnoreLine
 		);
 
 		printf(
@@ -270,6 +327,10 @@ function save_network_settings_fields() {
 
 	if ( isset( $_POST['sso_role_management'] ) ) { // WPCS input var ok
 		update_site_option( 'sso_role_management', sanitize_text_field( wp_unslash( $_POST['sso_role_management'] ) ) ); // WPCS input var ok
+	}
+
+	if ( isset( $_POST['sso_idp_metadata'] ) ) { // WPCS input var ok
+		update_site_option( 'sso_idp_metadata', wp_unslash( $_POST['sso_idp_metadata'] ) ); // WPCS input var ok
 	}
 }
 

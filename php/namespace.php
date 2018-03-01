@@ -190,7 +190,7 @@ function instance() {
 	 */
 	$config = apply_filters( 'wpsimplesaml_config', [] );
 
-	if ( empty( $config ) ) {
+	if ( empty( $config ) || is_wp_error( $config ) ) {
 		return false;
 	}
 
