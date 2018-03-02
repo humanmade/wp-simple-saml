@@ -29,11 +29,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 namespace HumanMade\SimpleSaml;
 
-define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
-
+require_once __DIR__ . '/inc/namespace.php';
+require_once __DIR__ . '/inc/admin/namespace.php';
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/php/namespace.php';
-require_once __DIR__ . '/php/admin.php';
 
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\admin_bootstrap' );

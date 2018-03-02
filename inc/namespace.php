@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 namespace HumanMade\SimpleSaml;
 
+define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
+
 /**
  * Bootstrap the plugin, adding required actions and filters
  *
@@ -180,8 +182,6 @@ function instance() {
 	if ( ! empty( $instance ) ) {
 		return $instance;
 	}
-
-	require_once dirname( WP_SIMPLE_SAML_PLUGIN_FILE ) . '/vendor/onelogin/php-saml/_toolkit_loader.php';
 
 	/**
 	 * Filters configuration of the plugin, the onelogin php-saml way
@@ -650,12 +650,13 @@ function get_redirection_url() {
  * @return bool
  */
 function is_sso_enabled_network_wide() {
+	$plugin_basename = plugin_basename( dirname( __DIR__ ) . '/plugin.php' );
 	/**
 	 * Filters whether the plugin is activated network-wide, ie when activated via code
 	 *
 	 * @return bool
 	 */
-	return apply_filters( 'wpsimplesaml_network_activated', is_multisite() && is_plugin_active_for_network( plugin_basename( WP_SIMPLE_SAML_PLUGIN_FILE ) ) );
+	return apply_filters( 'wpsimplesaml_network_activated', is_multisite() && is_plugin_active_for_network( $plugin_basename ) );
 }
 
 /**
