@@ -33,7 +33,7 @@ Copy the plugin files to your `wp-content/plugins` directory, activate the plugi
 
 **Note**: If you're activating the plugin network-wide via code, you might need to use the filter `wpsimplesaml_network_activated` to override the standard WordPress check, something like this would be what you need:
 
-```
+```php
 add_filter( 'wpsimplesaml_network_activated', '__return_true' )
 ``` 
 
