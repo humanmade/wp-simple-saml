@@ -2,8 +2,8 @@
 
 [![Build Status](https://api.travis-ci.org/onelogin/php-saml.png?branch=master)](http://travis-ci.org/onelogin/php-saml) [![Coverage Status](https://coveralls.io/repos/onelogin/php-saml/badge.png)](https://coveralls.io/r/onelogin/php-saml) [![License](https://poser.pugx.org/onelogin/php-saml/license.png)](https://packagist.org/packages/onelogin/php-saml)
 
-Add SAML support to your PHP softwares using this library.
-Forget those complicated libraries and use that open source library provided
+Add SAML support to your PHP software using this library.
+Forget those complicated libraries and use this open source library provided
 and supported by OneLogin Inc.
 
 
@@ -83,7 +83,7 @@ Installation
 
  * `php >= 5.3.3` and some core extensions like `php-xml`, `php-date`, `php-zlib`.
  * `openssl`. Install the openssl library. It handles x509 certificates.
- * `mcrypt`. Install that library and its php driver if you gonna handle
+ * `mcrypt`. Install that library and its php driver if you're going to handle
    encrypted data (`nameID`, `assertions`).
  * `gettext`. Install that library and its php driver. It handles translations.
  * `curl`. Install that library and its php driver if you plan to use the IdP Metadata parser.
@@ -124,7 +124,7 @@ Compatibility
 
 This 2.0 version has a new library. The toolkit is still compatible.
 
-The old code that you used in order to add SAML support gonna continue working
+The old code that you used in order to add SAML support will continue working
 with minor changes. You only need to load the files of the `lib/Saml` folder.
 (notice that the `compatibility.php` file do that).
 
@@ -152,8 +152,10 @@ start, for example to use the static method getSelfURLNoQuery use:
 Security warning
 ----------------
 
-In production, the `strict` parameter **MUST** be set as `"true"`. Otherwise
-your environment is not secure and will be exposed to attacks.
+In production, the `strict` parameter **MUST** be set as `"true"` and the
+`signatureAlgorithm` and `digestAlgorithm` under `security` must be set to
+something other than SHA1 (see https://shattered.io/ ). Otherwise your
+environment is not secure and will be exposed to attacks.
 
 
 Getting started
@@ -496,14 +498,16 @@ $advancedSettings = array (
         //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256'
         //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha384'
         //    'http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'
-        'signatureAlgorithm' => 'http://www.w3.org/2000/09/xmldsig#rsa-sha1',
+        // Notice that sha1 is a deprecated algorithm and should not be used
+        'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 
         // Algorithm that the toolkit will use on digest process. Options:
         //    'http://www.w3.org/2000/09/xmldsig#sha1'
         //    'http://www.w3.org/2001/04/xmlenc#sha256'
         //    'http://www.w3.org/2001/04/xmldsig-more#sha384'
         //    'http://www.w3.org/2001/04/xmlenc#sha512'
-        'digestAlgorithm' => 'http://www.w3.org/2000/09/xmldsig#sha1',
+        // Notice that sha1 is a deprecated algorithm and should not be used
+        'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
 
         // ADFS URL-Encodes SAML data as lowercase, and the toolkit by default uses
         // uppercase. Turn it True for ADFS compatibility on signature verification
@@ -721,11 +725,12 @@ if (isset($_SESSION) && isset($_SESSION['AuthNRequestID'])) {
 }
 
 $auth->processResponse($requestID);
+unset($_SESSION['AuthNRequestID']);
 
 $errors = $auth->getErrors();
 
 if (!empty($errors)) {
-    print_r('<p>'.implode(', ', $errors).'</p>');
+    echo '<p>', implode(', ', $errors), '</p>';
     exit();
 }
 
@@ -736,6 +741,9 @@ if (!$auth->isAuthenticated()) {
 
 $_SESSION['samlUserdata'] = $auth->getAttributes();
 $_SESSION['samlNameId'] = $auth->getNameId();
+$_SESSION['samlNameIdFormat'] = $auth->getNameIdFormat();
+$_SESSION['samlSessionIndex'] = $auth->getSessionIndex();
+
 if (isset($_POST['RelayState']) && OneLogin_Saml2_Utils::getSelfURL() != $_POST['RelayState']) {
     $auth->redirectTo($_POST['RelayState']);
 }
@@ -861,9 +869,9 @@ $auth->processSLO(false, $requestID);
 $errors = $auth->getErrors();
 
 if (empty($errors)) {
-    print_r('Sucessfully logged out');
+    echo 'Sucessfully logged out';
 } else {
-    print_r(implode(', ', $errors));
+    echo implode(', ', $errors);
 }
 ```
 
@@ -961,12 +969,14 @@ $auth = new OneLogin_Saml2_Auth();
 $auth->logout();   // Method that sent the Logout Request.
 ```
 
-Also there are three optional parameters that can be set:
-
+Also there are six optional parameters that can be set:
+* `$returnTo` - The target URL the user should be returned to after logout.
+* `$parameters` - Extra parameters to be added to the GET.
 * `$name_id` - That will be used to build the LogoutRequest. If `name_id` parameter is not set and the auth object processed a
 SAML Response with a `NameId`, then this `NameId` will be used.
 * `$session_index` - SessionIndex that identifies the session of the user.
-* `$strict` - True if we want to stay (returns the url string) False to redirect.
+* `$stay` - True if we want to stay (returns the url string) False to redirect.
+* `$nameIdFormat` - The NameID Format will be set in the LogoutRequest.
 
 The Logout Request will be sent signed or unsigned based on the security
 info of the `advanced_settings.php` (`'logoutRequestSigned'`).
@@ -984,6 +994,25 @@ to other php file.
 $newTargetUrl = 'http://example.com/loggedOut.php';
 $auth = new OneLogin_Saml2_Auth();
 $auth->logout($newTargetUrl);
+```
+A more complex logout with all the parameters:
+```
+$auth = new OneLogin_Saml2_Auth();
+$returnTo = null;
+$paramters = array();
+$nameId = null;
+$sessionIndex = null;
+$nameIdFormat = null;
+if (isset($_SESSION['samlNameId'])) {
+    $nameId = $_SESSION['samlNameId'];
+}
+if (isset($_SESSION['samlSessionIndex'])) {
+    $sessionIndex = $_SESSION['samlSessionIndex'];
+}
+if (isset($_SESSION['samlNameIdFormat'])) {
+    $nameIdFormat = $_SESSION['samlNameIdFormat'];
+}
+$auth->logout($returnTo, $paramters, $nameId, $sessionIndex, false, $nameIdFormat);
 ```
 
 If a match on the future LogoutResponse ID and the LogoutRequest ID to be sent is required, that LogoutRequest ID must to be extracted and stored.
@@ -1012,8 +1041,7 @@ session_start();    // Initialize the session, we do that because
                     // Note that processResponse and processSLO
                     // methods could manipulate/close that session
 
-require_once dirname(dirname(__FILE__)).'/_toolkit_loader.php'; // Load Saml2 and
-                                                                // external libs
+require_once dirname(__DIR__).'/_toolkit_loader.php'; // Load Saml2 and external libs
 require_once 'settings.php';    // Load the setting info as an Array
 
 $auth = new OneLogin_Saml2_Auth($settingsInfo);  // Initialize the SP SAML instance
@@ -1034,7 +1062,7 @@ if (isset($_GET['sso'])) {    // SSO action.  Will send an AuthNRequest to the I
                                    // that could took place during the process
 
     if (!empty($errors)) {
-        print_r('<p>'.implode(', ', $errors).'</p>');
+        echo '<p>', implode(', ', $errors), '</p>';
     }
                                           // This check if the response was
     if (!$auth->isAuthenticated()) {      // sucessfully validated and the user
@@ -1050,9 +1078,9 @@ if (isset($_GET['sso'])) {    // SSO action.  Will send an AuthNRequest to the I
     $auth->processSLO();            // Process the Logout Request & Logout Response
     $errors = $auth->getErrors(); // Retrieves possible validation errors
     if (empty($errors)) {
-        print_r('<p>Sucessfully logged out</p>');
+        echo '<p>Sucessfully logged out</p>';
     } else {
-        print_r('<p>'.implode(', ', $errors).'</p>');
+        echo '<p>', implode(', ', $errors), '</p>';
     }
 }
 
@@ -1489,11 +1517,11 @@ Once the SP is configured, the metadata of the SP is published at the
 
 ### How it works ###
 
-At demo1, we saw how all the SAML Request and Responses were handler at an
+In demo1, we saw how all the SAML Request and Responses were handler at an
 unique file, the `index.php` file. This demo1 uses high-level programming.
 
-At demo2, we have several views: `index.php`, `sso.php`, `slo.php`, `consume.php`
-and `metadata.php`. As we said, we gonna use the endpoints that are defined
+In demo2, we have several views: `index.php`, `sso.php`, `slo.php`, `consume.php`
+and `metadata.php`. As we said, we will use the endpoints that are defined
 in the toolkit (`acs.php`, `sls.php` of the endpoints folder). This demo2 uses
 low-level programming.
 

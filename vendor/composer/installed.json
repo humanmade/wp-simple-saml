@@ -1,20 +1,21 @@
 [
     {
         "name": "onelogin/php-saml",
-        "version": "2.10.7",
-        "version_normalized": "2.10.7.0",
+        "version": "v2.12.0",
+        "version_normalized": "2.12.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/onelogin/php-saml.git",
-            "reference": "b41f731803f303879f50fa76276908088197731c"
+            "reference": "9416fa739cff88ffcc472967cec048a774b97e0f"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/onelogin/php-saml/zipball/b41f731803f303879f50fa76276908088197731c",
-            "reference": "b41f731803f303879f50fa76276908088197731c",
+            "url": "https://api.github.com/repos/onelogin/php-saml/zipball/9416fa739cff88ffcc472967cec048a774b97e0f",
+            "reference": "9416fa739cff88ffcc472967cec048a774b97e0f",
             "shasum": ""
         },
         "require": {
+            "ext-curl": "*",
             "ext-dom": "*",
             "ext-mcrypt": "*",
             "ext-openssl": "*",
@@ -26,14 +27,12 @@
             "phpunit/phpunit": "4.8",
             "satooshi/php-coveralls": "1.0.1",
             "sebastian/phpcpd": "*",
-            "squizlabs/php_codesniffer": "*"
+            "squizlabs/php_codesniffer": "2.9.0"
         },
         "suggest": {
-            "ext-gettext": "Install gettext and php5-gettext libs to handle translations",
-            "ext-mcrypt": "Install mcrypt and php5-mcrypt libs in order to support encryption",
-            "lib-openssl": "Install openssl lib in order to handle with x509 certs (require to support sign and encryption)"
+            "ext-gettext": "Install gettext and php5-gettext libs to handle translations"
         },
-        "time": "2017-05-19 10:32:03",
+        "time": "2017-11-06T17:44:03+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
@@ -48,7 +47,7 @@
             "MIT"
         ],
         "description": "OneLogin PHP SAML Toolkit",
-        "homepage": "https://onelogin.zendesk.com/hc/en-us/sections/200245634-SAML-Toolkits",
+        "homepage": "https://developers.onelogin.com/saml/php",
         "keywords": [
             "SAML2",
             "onelogin",

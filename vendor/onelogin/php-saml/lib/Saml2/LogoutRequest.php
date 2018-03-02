@@ -38,8 +38,9 @@ class OneLogin_Saml2_LogoutRequest
      * @param string|null             $nameId       The NameID that will be set in the LogoutRequest.
      * @param string|null             $sessionIndex The SessionIndex (taken from the SAML Response in the SSO process).
      * @param string|null             $nameIdFormat The NameID Format will be set in the LogoutRequest.
+     * @param string|null             $nameIdNameQualifier The NameID NameQualifier will be set in the LogoutRequest.
      */
-    public function __construct(OneLogin_Saml2_Settings $settings, $request = null, $nameId = null, $sessionIndex = null, $nameIdFormat = null)
+    public function __construct(OneLogin_Saml2_Settings $settings, $request = null, $nameId = null, $sessionIndex = null, $nameIdFormat = null, $nameIdNameQualifier = null)
     {
         $this->_settings = $settings;
 
@@ -71,7 +72,8 @@ class OneLogin_Saml2_LogoutRequest
             }
 
             if (!empty($nameId)) {
-                if (empty($nameIdFormat)) {
+                if (empty($nameIdFormat) &&
+                  $spData['NameIDFormat'] != OneLogin_Saml2_Constants::NAMEID_UNSPECIFIED) {
                     $nameIdFormat = $spData['NameIDFormat'];
                 }
                 $spNameQualifier = null;
@@ -85,12 +87,13 @@ class OneLogin_Saml2_LogoutRequest
                 $nameId,
                 $spNameQualifier,
                 $nameIdFormat,
-                $cert
+                $cert,
+                $nameIdNameQualifier
             );
 
             $sessionIndexStr = isset($sessionIndex) ? "<samlp:SessionIndex>{$sessionIndex}</samlp:SessionIndex>" : "";
 
-            $sp_entity_id = htmlspecialchars($spData['entityId'], ENT_QUOTES);
+            $spEntityId = htmlspecialchars($spData['entityId'], ENT_QUOTES);
             $logoutRequest = <<<LOGOUTREQUEST
 <samlp:LogoutRequest
     xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -99,7 +102,7 @@ class OneLogin_Saml2_LogoutRequest
     Version="2.0"
     IssueInstant="{$issueInstant}"
     Destination="{$idpData['singleLogoutService']['url']}">
-    <saml:Issuer>{$sp_entity_id}</saml:Issuer>
+    <saml:Issuer>{$spEntityId}</saml:Issuer>
     {$nameIdObj}
     {$sessionIndexStr}
 </samlp:LogoutRequest>
@@ -378,7 +381,7 @@ LOGOUTREQUEST;
             $this->_error = $e->getMessage();
             $debug = $this->_settings->isDebugActive();
             if ($debug) {
-                echo $this->_error;
+                echo htmlentities($this->_error);
             }
             return false;
         }

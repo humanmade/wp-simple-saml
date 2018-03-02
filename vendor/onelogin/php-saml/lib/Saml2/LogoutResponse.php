@@ -32,7 +32,7 @@ class OneLogin_Saml2_LogoutResponse
 
     /**
     * After execute a validation process, if it fails, this var contains the cause
-    * @var string
+    * @var string|null
     */
     private $_error;
 
@@ -87,7 +87,7 @@ class OneLogin_Saml2_LogoutResponse
     /**
      * Gets the Status of the Logout Response.
      *
-     * @return string The Status
+     * @return string|null The Status
      */
     public function getStatus()
     {
@@ -188,7 +188,7 @@ class OneLogin_Saml2_LogoutResponse
             $this->_error = $e->getMessage();
             $debug = $this->_settings->isDebugActive();
             if ($debug) {
-                echo $this->_error;
+                echo htmlentities($this->_error);
             }
             return false;
         }
@@ -221,7 +221,7 @@ class OneLogin_Saml2_LogoutResponse
         $this->id = OneLogin_Saml2_Utils::generateUniqueID();
         $issueInstant = OneLogin_Saml2_Utils::parseTime2SAML(time());
 
-        $sp_entity_id = htmlspecialchars($spData['entityId'], ENT_QUOTES);
+        $spEntityId = htmlspecialchars($spData['entityId'], ENT_QUOTES);
         $logoutResponse = <<<LOGOUTRESPONSE
 <samlp:LogoutResponse xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
                   xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
@@ -231,7 +231,7 @@ class OneLogin_Saml2_LogoutResponse
                   Destination="{$idpData['singleLogoutService']['url']}"
                   InResponseTo="{$inResponseTo}"
                   >
-    <saml:Issuer>{$sp_entity_id}</saml:Issuer>
+    <saml:Issuer>{$spEntityId}</saml:Issuer>
     <samlp:Status>
         <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" />
     </samlp:Status>
@@ -271,7 +271,7 @@ LOGOUTRESPONSE;
     }
 
    /**
-    * @return the ID of the Response
+    * @return string the ID of the Response
     */
     public function getId()
     {

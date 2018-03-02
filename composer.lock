@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b62c6566f381a247290facd2c0d094e0",
-    "content-hash": "9516367fb3991522034dc58c5297619d",
+    "content-hash": "62e35cdff2b34b3908d5ea0f192930ea",
     "packages": [
         {
             "name": "onelogin/php-saml",
-            "version": "2.10.7",
+            "version": "v2.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/onelogin/php-saml.git",
-                "reference": "b41f731803f303879f50fa76276908088197731c"
+                "reference": "9416fa739cff88ffcc472967cec048a774b97e0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/onelogin/php-saml/zipball/b41f731803f303879f50fa76276908088197731c",
-                "reference": "b41f731803f303879f50fa76276908088197731c",
+                "url": "https://api.github.com/repos/onelogin/php-saml/zipball/9416fa739cff88ffcc472967cec048a774b97e0f",
+                "reference": "9416fa739cff88ffcc472967cec048a774b97e0f",
                 "shasum": ""
             },
             "require": {
+                "ext-curl": "*",
                 "ext-dom": "*",
                 "ext-mcrypt": "*",
                 "ext-openssl": "*",
@@ -33,12 +33,10 @@
                 "phpunit/phpunit": "4.8",
                 "satooshi/php-coveralls": "1.0.1",
                 "sebastian/phpcpd": "*",
-                "squizlabs/php_codesniffer": "*"
+                "squizlabs/php_codesniffer": "2.9.0"
             },
             "suggest": {
-                "ext-gettext": "Install gettext and php5-gettext libs to handle translations",
-                "ext-mcrypt": "Install mcrypt and php5-mcrypt libs in order to support encryption",
-                "lib-openssl": "Install openssl lib in order to handle with x509 certs (require to support sign and encryption)"
+                "ext-gettext": "Install gettext and php5-gettext libs to handle translations"
             },
             "type": "library",
             "autoload": {
@@ -53,19 +51,189 @@
                 "MIT"
             ],
             "description": "OneLogin PHP SAML Toolkit",
-            "homepage": "https://onelogin.zendesk.com/hc/en-us/sections/200245634-SAML-Toolkits",
+            "homepage": "https://developers.onelogin.com/saml/php",
             "keywords": [
                 "SAML2",
                 "onelogin",
                 "saml"
             ],
-            "time": "2017-05-19 10:32:03"
+            "time": "2017-11-06T17:44:03+00:00"
         }
     ],
-    "packages-dev": [],
+    "packages-dev": [
+        {
+            "name": "fig-r/psr2r-sniffer",
+            "version": "0.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig-rectified/psr2r-sniffer.git",
+                "reference": "ff4659fdb1ce8832a9e408a6e22aa05bc93efe10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/ff4659fdb1ce8832a9e408a6e22aa05bc93efe10",
+                "reference": "ff4659fdb1ce8832a9e408a6e22aa05bc93efe10",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.16",
+                "squizlabs/php_codesniffer": "^3.0"
+            },
+            "bin": [
+                "bin/tokenize",
+                "bin/sniff"
+            ],
+            "type": "phpcodesniffer-standard",
+            "autoload": {
+                "psr-4": {
+                    "PSR2R\\": "PSR2R"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Scherer",
+                    "homepage": "http://www.dereuromark.de",
+                    "role": "Contributor"
+                }
+            ],
+            "description": "Code-Sniffer, Auto-Fixer and Tokenizer for PSR2-R",
+            "keywords": [
+                "codesniffer",
+                "cs"
+            ],
+            "time": "2017-08-30T10:00:39+00:00"
+        },
+        {
+            "name": "humanmade/coding-standards",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/humanmade/coding-standards.git",
+                "reference": "5471f1a1e9c24271541e969e612f0551972091f2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/humanmade/coding-standards/zipball/5471f1a1e9c24271541e969e612f0551972091f2",
+                "reference": "5471f1a1e9c24271541e969e612f0551972091f2",
+                "shasum": ""
+            },
+            "require": {
+                "fig-r/psr2r-sniffer": "^0.5.0",
+                "squizlabs/php_codesniffer": "^3.1",
+                "wp-coding-standards/wpcs": "^0.14.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7"
+            },
+            "type": "project",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Human Made coding standards",
+            "time": "2018-03-01T10:37:46+00:00"
+        },
+        {
+            "name": "squizlabs/php_codesniffer",
+            "version": "3.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
+                "reference": "4842476c434e375f9d3182ff7b89059583aa8b27"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/4842476c434e375f9d3182ff7b89059583aa8b27",
+                "reference": "4842476c434e375f9d3182ff7b89059583aa8b27",
+                "shasum": ""
+            },
+            "require": {
+                "ext-simplexml": "*",
+                "ext-tokenizer": "*",
+                "ext-xmlwriter": "*",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0"
+            },
+            "bin": [
+                "bin/phpcs",
+                "bin/phpcbf"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Greg Sherwood",
+                    "role": "lead"
+                }
+            ],
+            "description": "PHP_CodeSniffer tokenizes PHP, JavaScript and CSS files and detects violations of a defined set of coding standards.",
+            "homepage": "http://www.squizlabs.com/php-codesniffer",
+            "keywords": [
+                "phpcs",
+                "standards"
+            ],
+            "time": "2018-02-20T21:35:23+00:00"
+        },
+        {
+            "name": "wp-coding-standards/wpcs",
+            "version": "0.14.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
+                "reference": "cf6b310caad735816caef7573295f8a534374706"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/cf6b310caad735816caef7573295f8a534374706",
+                "reference": "cf6b310caad735816caef7573295f8a534374706",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "squizlabs/php_codesniffer": "^2.9.0 || ^3.0.2"
+            },
+            "suggest": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3"
+            },
+            "type": "phpcodesniffer-standard",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Contributors",
+                    "homepage": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/graphs/contributors"
+                }
+            ],
+            "description": "PHP_CodeSniffer rules (sniffs) to enforce WordPress coding conventions",
+            "keywords": [
+                "phpcs",
+                "standards",
+                "wordpress"
+            ],
+            "time": "2018-02-16T01:57:48+00:00"
+        }
+    ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "humanmade/coding-standards": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
