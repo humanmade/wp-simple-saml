@@ -12,7 +12,7 @@
 	</tr>
 	<tr>
 		<td>
-			A <strong><a href="https://hmn.md/">Human Made</a></strong> project. Maintained by @shadyvb.
+			A <strong><a href="https://hmn.md/">Human Made</a></strong> project. Maintained by <a href="https://github.com/shadyvb">Shady Sharaf</a>.
 		</td>
 		<td align="center">
 			<img src="https://hmn.md/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" />
