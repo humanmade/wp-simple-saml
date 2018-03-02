@@ -281,10 +281,16 @@ function action_verify() {
 function action_metadata() {
 	$auth     = instance();
 	$settings = $auth->getSettings();
-	$metadata = $settings->getSPMetadata();
-	$errors   = $settings->validateMetadata( $metadata );
+	$metadata = null;
+	try {
+		$metadata = $settings->getSPMetadata();
+		$errors   = $settings->validateMetadata( $metadata );
+	} catch ( \Exception $e ) {
+		$errors = $e->getMessage();
+	}
+
 	if ( $errors ) {
-		wp_die( esc_html__( 'Invalid SSO SP config, please contact your administrator.', 'wp-simple-saml' ) );
+		wp_die( esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ) );
 	}
 
 	header( 'Content-Type: text/xml' );
@@ -300,7 +306,12 @@ function action_metadata() {
 function get_sso_user() {
 	$saml = instance();
 
-	$saml->processResponse();
+	try {
+		$saml->processResponse();
+	} catch ( \Exception $e ) {
+		/* translators: %s = error message */
+		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+	}
 
 	if ( ! empty( $saml->getErrors() ) ) {
 		$errors = implode( ', ', $saml->getErrors() );
@@ -482,7 +493,7 @@ function map_user_roles( $user, array $attributes ) {
 			// Add the user to the defined sites, and assign proper role(s)
 			foreach ( $roles['sites'] as $site_id => $site_roles ) {
 				switch_to_blog( $site_id );
-				$user->for_blog( $site_id );
+				$user->for_site( $site_id );
 				$user->set_role( reset( $site_roles ) );
 
 				foreach ( array_slice( $site_roles, 1 ) as $role ) {
@@ -497,7 +508,7 @@ function map_user_roles( $user, array $attributes ) {
 
 			foreach ( $all_site_ids as $site_id ) {
 				switch_to_blog( $site_id );
-				$user->for_blog( $site_id );
+				$user->for_site( $site_id );
 				$user->set_role( reset( $roles['network'] ) );
 
 				foreach ( array_slice( $roles['network'], 1 ) as $role ) {
@@ -532,7 +543,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host = wp_parse_url( $url, PHP_URL_HOST );
-	$allowed_hosts = explode( ',', get_sso_settings( 'sso_whitelisted_hosts' ) );
+	$allowed_hosts = explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) );
 
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
@@ -697,7 +708,6 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 	 */
 	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
 	$roles = array_unique( array_filter( $roles ) );
-
 
 	if ( empty( $roles ) ) {
 		return [];

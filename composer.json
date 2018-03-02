@@ -1,5 +1,8 @@
 {
-    "require": {
-        "onelogin/php-saml": "^2.10"
-    }
+	"require": {
+		"onelogin/php-saml": "^2.10"
+	},
+	"require-dev": {
+		"humanmade/coding-standards": "dev-master"
+	}
 }

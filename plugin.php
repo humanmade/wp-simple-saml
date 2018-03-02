@@ -34,4 +34,4 @@ require_once __DIR__ . '/inc/admin/namespace.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
-add_action( 'plugins_loaded', __NAMESPACE__ . '\\admin_bootstrap' );
+add_action( 'plugins_loaded', __NAMESPACE__ . '\\Admin\\admin_bootstrap' );
