@@ -532,6 +532,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host = wp_parse_url( $url, PHP_URL_HOST );
+	$allowed_hosts = preg_split( '#[\r\n]+#', get_sso_settings( 'sso_whitelisted_hosts' ) );
 
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
@@ -541,7 +542,7 @@ function cross_site_sso_redirect( $url ) {
 	 *
 	 * @return bool
 	 */
-	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', [], $host, $url );
+	$allowed_hosts = apply_filters( 'wpsimplesaml_allowed_hosts', $allowed_hosts, $host, $url );
 	// Allow local hosts ending in .local
 	if ( '.local' === substr( $host, - strlen( '.local' ) ) ) {
 		$allowed_hosts[] = $host;

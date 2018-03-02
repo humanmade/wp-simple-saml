@@ -131,11 +131,12 @@ function config_admin_notice() {
  */
 function get_sso_settings( $option = null ) {
 	$options = [
-		'sso_enabled'         => '',
-		'sso_debug'           => 0,
-		'sso_sp_base'         => is_sso_enabled_network_wide() ? get_blog_details( 'home', get_network()->site_id ) : home_url(),
-		'sso_role_management' => '',
-		'sso_idp_metadata'    => '',
+		'sso_enabled'           => '',
+		'sso_debug'             => 0,
+		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_blog_details( 'home', get_network()->site_id ) : home_url(),
+		'sso_role_management'   => '',
+		'sso_whitelisted_hosts' => '',
+		'sso_idp_metadata'      => '',
 	];
 
 	// Network options is used instead if the plugin is activated network-wide
@@ -225,7 +226,15 @@ function settings_fields() {
 		<?php
 	}, $settings_section, 'sso_settings' );
 
-	register_setting( $settings_section, 'sso_idp_metadata', 'sanitize_text' );
+	register_setting( $settings_section, 'sso_whitelisted_hosts', 'sanitize_textarea_field' );
+	add_settings_field( 'sso_whitelisted_hosts', __( 'SSO delegation whitelisted hosts', 'wp-simple-saml' ), function () use ( $options ) {
+		$value = $options['sso_whitelisted_hosts'];
+		?>
+		<textarea name="sso_whitelisted_hosts" id="sso_whitelisted_hosts" style="width: 100%; height: 200px"><?php echo esc_html( $value ); ?></textarea>
+		<?php
+	}, $settings_section, 'sso_settings' );
+
+	register_setting( $settings_section, 'sso_idp_metadata' );
 	add_settings_field( 'sso_idp_metadata', __( 'SSO IdP Metadata', 'wp-simple-saml' ), function () use ( $options ) {
 		remove_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
 		$xml = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' ) || apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
@@ -327,6 +336,10 @@ function save_network_settings_fields() {
 
 	if ( isset( $_POST['sso_role_management'] ) ) { // WPCS input var ok
 		update_site_option( 'sso_role_management', sanitize_text_field( wp_unslash( $_POST['sso_role_management'] ) ) ); // WPCS input var ok
+	}
+
+	if ( isset( $_POST['sso_whitelisted_hosts'] ) ) { // WPCS input var ok
+		update_site_option( 'sso_whitelisted_hosts', sanitize_textarea_field( wp_unslash( $_POST['sso_whitelisted_hosts'] ) ) ); // WPCS input var ok
 	}
 
 	if ( isset( $_POST['sso_idp_metadata'] ) ) { // WPCS input var ok
