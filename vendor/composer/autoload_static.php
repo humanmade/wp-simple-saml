@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit7b2d48b83b71e76a1c0ada411cb53b32
+class ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f
 {
     public static $classMap = array (
         'OneLogin_Saml2_Auth' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Auth.php',
@@ -32,7 +32,7 @@ class ComposerStaticInit7b2d48b83b71e76a1c0ada411cb53b32
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit7b2d48b83b71e76a1c0ada411cb53b32::$classMap;
+            $loader->classMap = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$classMap;
 
         }, null, ClassLoader::class);
     }

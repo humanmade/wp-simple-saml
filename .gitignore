@@ -9,6 +9,5 @@ vendor/onelogin/php-saml/demo1/
 vendor/onelogin/php-saml/demo2/
 vendor/onelogin/php-saml/docs/
 vendor/onelogin/php-saml/endpoints/
-vendor/onelogin/php-saml/lib/Saml/
 vendor/onelogin/php-saml/settings_example.php
 vendor/onelogin/php-saml/tests/
