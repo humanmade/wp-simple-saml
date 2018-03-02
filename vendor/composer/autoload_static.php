@@ -6,6 +6,20 @@ namespace Composer\Autoload;
 
 class ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f
 {
+    public static $prefixLengthsPsr4 = array (
+        'P' => 
+        array (
+            'PSR2R\\' => 6,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'PSR2R\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/fig-r/psr2r-sniffer/PSR2R',
+        ),
+    );
+
     public static $classMap = array (
         'OneLogin_Saml2_Auth' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Auth.php',
         'OneLogin_Saml2_AuthnRequest' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/AuthnRequest.php',
@@ -32,6 +46,8 @@ class ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$classMap;
 
         }, null, ClassLoader::class);

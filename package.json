@@ -1,0 +1,27 @@
+{
+  "name": "wp-simple-saml",
+  "version": "0.1.0",
+  "description": "WordPress plugin for integration with SAML SSO",
+  "scripts": {
+    "cs": "vendor/bin/phpcs --standard=./vendor/humanmade/coding-standards/ruleset.xml .",
+    "precommit": "npm run cs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humanmade/wp-simple-saml.git"
+  },
+  "keywords": [
+    "wordpress",
+    "sso",
+    "saml"
+  ],
+  "author": "Shady Sharaf <shady@sharaf.me>",
+  "license": "GPL3",
+  "bugs": {
+    "url": "https://github.com/humanmade/wp-simple-saml/issues"
+  },
+  "homepage": "https://github.com/humanmade/wp-simple-saml#readme",
+  "devDependencies": {
+    "husky": "^0.14.3"
+  }
+}

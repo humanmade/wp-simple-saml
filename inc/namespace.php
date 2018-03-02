@@ -336,7 +336,7 @@ function get_sso_user() {
  */
 function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
 
-	$map = get_attribute_map();
+	$map        = get_attribute_map();
 	$attributes = $saml->getAttributes();
 
 	// Check whether email is the unique identifier set in SAML IDP
@@ -542,7 +542,7 @@ function signon( $user ) {
  */
 function cross_site_sso_redirect( $url ) {
 
-	$host = wp_parse_url( $url, PHP_URL_HOST );
+	$host          = wp_parse_url( $url, PHP_URL_HOST );
 	$allowed_hosts = explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) );
 
 	/**

@@ -255,7 +255,7 @@ function settings_fields() {
 	}, $settings_section, 'sso_settings' );
 
 	add_settings_field( 'sso_config_validate', __( 'SSO Config validation', 'wp-simple-saml' ), function() {
-		$path     = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
+		$path = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
 		if ( $path ) {
 			$xml = true;
 		} else {
