@@ -226,11 +226,12 @@ function settings_fields() {
 		<?php
 	}, $settings_section, 'sso_settings' );
 
-	register_setting( $settings_section, 'sso_whitelisted_hosts', 'sanitize_textarea_field' );
+	register_setting( $settings_section, 'sso_whitelisted_hosts', 'sanitize_text_field' );
 	add_settings_field( 'sso_whitelisted_hosts', __( 'SSO delegation whitelisted hosts', 'wp-simple-saml' ), function () use ( $options ) {
 		$value = $options['sso_whitelisted_hosts'];
 		?>
-		<textarea name="sso_whitelisted_hosts" id="sso_whitelisted_hosts" style="width: 100%; height: 200px"><?php echo esc_html( $value ); ?></textarea>
+		<input type="text" name="sso_whitelisted_hosts" id="sso_whitelisted_hosts" value="<?php echo esc_attr( $value ); ?>"/>
+		<br/><small><?php esc_html_e( 'Separate hosts by comma', 'wp-simple-saml' ); ?></small>
 		<?php
 	}, $settings_section, 'sso_settings' );
 
@@ -339,7 +340,7 @@ function save_network_settings_fields() {
 	}
 
 	if ( isset( $_POST['sso_whitelisted_hosts'] ) ) { // WPCS input var ok
-		update_site_option( 'sso_whitelisted_hosts', sanitize_textarea_field( wp_unslash( $_POST['sso_whitelisted_hosts'] ) ) ); // WPCS input var ok
+		update_site_option( 'sso_whitelisted_hosts', sanitize_text_field( wp_unslash( $_POST['sso_whitelisted_hosts'] ) ) ); // WPCS input var ok
 	}
 
 	if ( isset( $_POST['sso_idp_metadata'] ) ) { // WPCS input var ok
