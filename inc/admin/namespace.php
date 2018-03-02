@@ -57,7 +57,9 @@ function get_config() {
 			$settings = OneLogin_Saml2_IdPMetadataParser::parseXML( $idp_xml );
 		}
 	} catch ( \Exception $e ) {
-		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [ 'errors' => $e->getMessage() ] );
+		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
+			'errors' => $e->getMessage(),
+		] );
 	}
 
 	/**

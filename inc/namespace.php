@@ -640,7 +640,7 @@ function get_redirection_url() {
 
 	// If no redirection URL exists in the URL query, see if we have one from the SAML response
 	if ( empty( $redirect ) && isset( $_POST['RelayState'] ) ) { // @codingStandardsIgnoreLine
-		$redirect = $_POST['RelayState']; // WPCS: input var okay
+		$redirect = $_POST['RelayState']; // @codingStandardsIgnoreLine
 	}
 
 	if ( $redirect ) {
