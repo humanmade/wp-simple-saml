@@ -137,7 +137,7 @@ function get_sso_settings( $option = null ) {
 	$options = [
 		'sso_enabled'           => '',
 		'sso_debug'             => 0,
-		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_blog_details( 'home', get_network()->site_id ) : home_url(),
+		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' ),
 		'sso_role_management'   => '',
 		'sso_whitelisted_hosts' => '',
 		'sso_idp_metadata'      => '',
@@ -196,20 +196,28 @@ function settings_fields() {
 		<?php
 	}, $settings_section, 'sso_settings' );
 
-	register_setting( $settings_section, 'sso_debug', 'absint' );
-	add_settings_field( 'sso_debug', __( 'SSO Debug via Cookies', 'wp-simple-saml' ), function () use ( $options ) {
-		$value = $options['sso_debug'];
+	register_setting( $settings_section, 'sso_sp_base', 'sanitize_url' );
+	add_settings_field( 'sso_sp_base', __( 'SSO Base URL', 'wp-simple-saml' ), function () use ( $options ) {
+		$value   = $options['sso_sp_base'];
+		$default = is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' );
 		?>
-		<input type="checkbox" name="sso_debug" id="sso_debug" value="1" <?php checked( $value ); ?>>
+		<input type="text" name="sso_sp_base" id="sso_sp_base" value="<?php echo esc_url_raw( $value ); ?>" placeholder="<?php echo esc_url_raw( $default ); ?>">
 		<?php
 	}, $settings_section, 'sso_settings' );
 
-	register_setting( $settings_section, 'sso_sp_base', 'sanitize_url' );
-	add_settings_field( 'sso_sp_base', __( 'SSO Base URL', 'wp-simple-saml' ), function () use ( $options ) {
-		$value = $options['sso_sp_base'];
-		?>
-		<input type="text" name="sso_sp_base" id="sso_sp_base" value="<?php echo esc_url_raw( $value ); ?>">
-		<?php
+	register_setting( $settings_section, 'sso_idp_metadata' );
+	add_settings_field( 'sso_idp_metadata', __( 'SSO IdP Metadata', 'wp-simple-saml' ), function () use ( $options ) {
+		remove_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+		$xml = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' ) || apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
+		add_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
+		if ( $xml ) {
+			esc_html_e( 'Managed via code', 'wp-simple-saml' );
+		} else {
+			$value = $options['sso_idp_metadata'];
+			?>
+			<textarea name="sso_idp_metadata" id="sso_idp_metadata" style="width: 100%; height: 200px" <?php disabled( (bool) $xml ); ?>><?php echo esc_html( $value ); ?></textarea>
+			<?php
+		}
 	}, $settings_section, 'sso_settings' );
 
 	register_setting( $settings_section, 'sso_role_management', 'sanitize_text' );
@@ -239,19 +247,12 @@ function settings_fields() {
 		<?php
 	}, $settings_section, 'sso_settings' );
 
-	register_setting( $settings_section, 'sso_idp_metadata' );
-	add_settings_field( 'sso_idp_metadata', __( 'SSO IdP Metadata', 'wp-simple-saml' ), function () use ( $options ) {
-		remove_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
-		$xml = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' ) || apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
-		add_filter( 'wpsimplesaml_idp_metadata_xml', __NAMESPACE__ . '\\get_config_from_db' );
-		if ( $xml ) {
-			esc_html_e( 'Managed via code', 'wp-simple-saml' );
-		} else {
-			$value = $options['sso_idp_metadata'];
-			?>
-			<textarea name="sso_idp_metadata" id="sso_idp_metadata" style="width: 100%; height: 200px" <?php disabled( (bool) $xml ); ?>><?php echo esc_html( $value ); ?></textarea>
-			<?php
-		}
+	register_setting( $settings_section, 'sso_debug', 'absint' );
+	add_settings_field( 'sso_debug', __( 'SSO Debug via Cookies', 'wp-simple-saml' ), function () use ( $options ) {
+		$value = $options['sso_debug'];
+		?>
+		<input type="checkbox" name="sso_debug" id="sso_debug" value="1" <?php checked( $value ); ?>>
+		<?php
 	}, $settings_section, 'sso_settings' );
 
 	add_settings_field( 'sso_config_validate', __( 'SSO Config validation', 'wp-simple-saml' ), function() {
