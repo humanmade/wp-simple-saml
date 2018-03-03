@@ -29,13 +29,16 @@ WordPress Simple SAML uses [OneLogin's PHP-SAML](https://github.com/onelogin/php
 ## Getting Set Up
 
 
-Copy the plugin files to your `wp-content/plugins` directory, activate the plugin, and head over to [configuration screen](#Configuration).
+- Copy the plugin files to your `wp-content/plugins` directory
+- Activate the plugin
+- Head over to [configuration screen](#Configuration).
+- Send Service Provider metadata URL ( or content ) to your Identity Provider authority (IdP) ( find the link in settings page ).
 
 **Note**: If you're activating the plugin network-wide via code, you might need to use the filter `wpsimplesaml_network_activated` to override the standard WordPress check, something like this would be what you need:
 
 ```php
 add_filter( 'wpsimplesaml_network_activated', '__return_true' )
-``` 
+```  
 
 ## Configuration
 

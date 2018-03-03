@@ -270,32 +270,38 @@ function settings_fields() {
 
 		printf(
 			'<strong>%s</strong>: %s',
-			esc_html( 'XML Path' ),
-			$path ? esc_html( $path ) : esc_html( 'No' )
+			esc_html__( 'XML Path', 'wp-simple-saml' ),
+			$path ? esc_html( $path ) : esc_html__( 'No', 'wp-simple-saml' )
 		);
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
-			esc_html( 'XML' ),
-			$xml ? esc_html( 'Yes' ) : esc_html( 'No' )
+			esc_html__( 'XML', 'wp-simple-saml' ),
+			$xml ? esc_html__( 'Yes', 'wp-simple-saml' ) : esc_html__( 'No', 'wp-simple-saml' )
 		);
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
-			esc_html( 'Passed config' ),
-			( ! empty( $config ) && ! is_wp_error( $config ) ) ? esc_html( 'Yes' ) : esc_html( 'No' )
+			esc_html__( 'Passed config', 'wp-simple-saml' ),
+			( ! empty( $config ) && ! is_wp_error( $config ) ) ? esc_html__( 'Yes', 'wp-simple-saml' ) : esc_html__( 'No', 'wp-simple-saml' )
 		);
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
-			esc_html( 'Valid config' ),
-			( $config && $instance ) ? esc_html( 'Yes' ) : ( is_wp_error( $config ) ? $config->get_error_message() : esc_html( 'No' ) ) // WPCS: @codingStandardsIgnoreLine
+			esc_html__( 'Valid config', 'wp-simple-saml' ),
+			( $config && $instance ) ? esc_html__( 'Yes', 'wp-simple-saml' ) : ( is_wp_error( $config ) ? $config->get_error_message() : esc_html__( 'No', 'wp-simple-saml' ) ) // WPCS: @codingStandardsIgnoreLine
 		);
 
 		printf(
 			'<br/><strong>%s</strong>: %s',
-			esc_html( 'Errors' ),
-			$errors ? sprintf( '<br/><code>%s</code>', wp_json_encode( $errors ) ) : esc_html( 'No' )
+			esc_html__( 'Errors', 'wp-simple-saml' ),
+			$errors ? sprintf( '<br/><code>%s</code>', wp_json_encode( $errors ) ) : esc_html__( 'No', 'wp-simple-saml' )
+		);
+
+		printf(
+			'<br/><strong>%1$s</strong>: <a href="%2$s">%2$s</a>',
+			esc_html__( 'SP Metadata', 'wp-simple-saml' ),
+			esc_url_raw( home_url( '/sso/metadata' ) )
 		);
 	}, $settings_section, 'sso_settings' );
 }

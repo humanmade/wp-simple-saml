@@ -116,7 +116,7 @@ function login_form_link() {
 	 *
 	 * @return bool  Forces SSO authentication if true, defaults to True
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_login_link', true ) ) {
+	if ( ! apply_filters( 'wpsimplesaml_log_in_link', true ) ) {
 		return;
 	}
 
