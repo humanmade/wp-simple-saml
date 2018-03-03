@@ -74,13 +74,6 @@ TL;DR; This is the basic minimum filters you'd need to get an implementation wor
 add_filter( 'wpsimplesaml_idp_metadata_xml_path', function(){
 	return ABSPATH . '/.private/sso/test.idp.xml';
 } );
-// OR..
-add_filter( 'wpsimplesaml_idp_metadata_xml', function(){
-    $xml = <<<XML
-...CONTENTS OF THE XML COPIED HERE...
-XML;
-	return $xml;
-} );
 
 // Configure attribute mapping between WordPress and SSO IdP SAML attributes
 add_filter( 'wpsimplesaml_attribute_mapping', function(){
