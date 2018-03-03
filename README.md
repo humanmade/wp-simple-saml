@@ -65,7 +65,7 @@ Shows information about IdP metadata and validity of its settings.
 
 ### Configuration via code
 
-WordPress Simple SAML is built to be as extensible as possible, so most aspects of the login/validation process can be tweaked as needed by using the available well-documented [filters](https://github.com/humanmade/wp-simple-saml/wiki/Filters).
+WordPress Simple SAML is built to be as extensible as possible, so most aspects of the login/validation process can be tweaked as needed by using the available well-documented [Hooks](https://github.com/humanmade/wp-simple-saml/wiki/Hooks).
 
 TL;DR; This is the basic minimum filters you'd need to get an implementation working with the default options.
 
