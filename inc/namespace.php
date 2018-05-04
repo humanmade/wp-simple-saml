@@ -652,6 +652,13 @@ function get_redirection_url() {
 		$redirect = admin_url();
 	}
 
+	/**
+	 * Filters redirection URL.
+	 *
+	 * @return string.
+	 */
+	$redirect = apply_filters( 'wpsimplesaml_redirection_url', $redirect );
+
 	return esc_url_raw( $redirect );
 }
 
