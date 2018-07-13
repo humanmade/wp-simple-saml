@@ -2,9 +2,9 @@
 
 namespace HumanMade\SimpleSaml\Admin;
 
-use OneLogin_Saml2_IdPMetadataParser;
-use function HumanMade\SimpleSaml\is_sso_enabled_network_wide;
 use function HumanMade\SimpleSaml\instance;
+use function HumanMade\SimpleSaml\is_sso_enabled_network_wide;
+use OneLogin_Saml2_IdPMetadataParser;
 
 /**
  * Bootstrap config/admin related actions
