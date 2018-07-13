@@ -14,3 +14,4 @@ vendor/onelogin/php-saml/endpoints/
 vendor/onelogin/php-saml/settings_example.php
 vendor/onelogin/php-saml/tests/
 node_modules
+.idea
