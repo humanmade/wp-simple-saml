@@ -1,4 +1,19 @@
 {
+	"name": "humanmade/wp-simple-saml",
+	"type": "wordpress-plugin",
+	"description": "WordPress Simple SAML plugin",
+	"keywords": [ "saml","wordpress","sso","onelogin","single-sign-on" ],
+	"homepage": "https://github.com/humanmade/wp-simple-saml",
+	"license": "GPL-3.0-or-later",
+	"version": "0.1.0",
+	"authors": [
+		{
+			"name": "Shady Sharaf",
+			"email": "shady@humanmade.com",
+			"homepage": "http://sharaf.me",
+			"role": "Developer"
+		}
+	],
 	"require": {
 		"onelogin/php-saml": "^2.10"
 	},
