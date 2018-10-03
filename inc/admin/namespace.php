@@ -110,14 +110,6 @@ function config_admin_notice() {
 		return;
 	}
 
-	$config = get_config();
-	if ( empty( $config ) ) {
-		printf(
-			'<div class="notice notice-error"><p>%s</p></div>',
-			esc_html__( 'WP Simple SAML is activated but not configured, See the docs for configuration instructions.', 'wp-simple-saml' )
-		);
-	}
-
 	if ( get_sso_settings( 'sso_debug' ) ) {
 		printf(
 			'<div class="notice notice-warning"><p>%s</p></div>',
