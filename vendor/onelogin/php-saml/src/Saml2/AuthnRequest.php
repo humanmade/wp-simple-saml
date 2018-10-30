@@ -1,26 +1,42 @@
 <?php
+/**
+ * This file is part of php-saml.
+ *
+ * (c) OneLogin Inc
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ * @package OneLogin
+ * @author  OneLogin Inc <saml-info@onelogin.com>
+ * @license MIT https://github.com/onelogin/php-saml/blob/master/LICENSE
+ * @link    https://github.com/onelogin/php-saml
+ */
+
+namespace OneLogin\Saml2;
 
 /**
  * SAML 2 Authentication Request
- *
  */
-class OneLogin_Saml2_AuthnRequest
+class AuthnRequest
 {
-
     /**
      * Object that represents the setting info
-     * @var OneLogin_Saml2_Settings
+     *
+     * @var Settings
      */
     protected $_settings;
 
     /**
      * SAML AuthNRequest string
+     *
      * @var string
      */
     private $_authnRequest;
 
     /**
      * SAML AuthNRequest ID.
+     *
      * @var string
      */
     private $_id;
@@ -28,12 +44,12 @@ class OneLogin_Saml2_AuthnRequest
     /**
      * Constructs the AuthnRequest object.
      *
-     * @param OneLogin_Saml2_Settings $settings Settings
-     * @param bool   $forceAuthn      When true the AuthNReuqest will set the ForceAuthn='true'
-     * @param bool   $isPassive       When true the AuthNReuqest will set the Ispassive='true'
-     * @param bool   $setNameIdPolicy When true the AuthNReuqest will set a nameIdPolicy
+     * @param Settings $settings        SAML Toolkit Settings
+     * @param bool                    $forceAuthn      When true the AuthNReuqest will set the ForceAuthn='true'
+     * @param bool                    $isPassive       When true the AuthNReuqest will set the Ispassive='true'
+     * @param bool                    $setNameIdPolicy When true the AuthNReuqest will set a nameIdPolicy
      */
-    public function __construct(OneLogin_Saml2_Settings $settings, $forceAuthn = false, $isPassive = false, $setNameIdPolicy = true)
+    public function __construct(\OneLogin\Saml2\Settings $settings, $forceAuthn = false, $isPassive = false, $setNameIdPolicy = true)
     {
         $this->_settings = $settings;
 
@@ -41,14 +57,14 @@ class OneLogin_Saml2_AuthnRequest
         $idpData = $this->_settings->getIdPData();
         $security = $this->_settings->getSecurityData();
 
-        $id = OneLogin_Saml2_Utils::generateUniqueID();
-        $issueInstant = OneLogin_Saml2_Utils::parseTime2SAML(time());
+        $id = Utils::generateUniqueID();
+        $issueInstant = Utils::parseTime2SAML(time());
 
         $nameIdPolicyStr = '';
         if ($setNameIdPolicy) {
             $nameIDPolicyFormat = $spData['NameIDFormat'];
             if (isset($security['wantNameIdEncrypted']) && $security['wantNameIdEncrypted']) {
-                $nameIDPolicyFormat = OneLogin_Saml2_Constants::NAMEID_ENCRYPTED;
+                $nameIDPolicyFormat = Constants::NAMEID_ENCRYPTED;
             }
 
             $nameIdPolicyStr = <<<NAMEIDPOLICY
@@ -93,7 +109,6 @@ ISPASSIVE;
 
         $requestedAuthnStr = '';
         if (isset($security['requestedAuthnContext']) && $security['requestedAuthnContext'] !== false) {
-
             $authnComparison = 'exact';
             if (isset($security['requestedAuthnContextComparison'])) {
                 $authnComparison = $security['requestedAuthnContextComparison'];
@@ -141,6 +156,8 @@ AUTHNREQUEST;
      * Returns deflated, base64 encoded, unsigned AuthnRequest.
      *
      * @param bool|null $deflate Whether or not we should 'gzdeflate' the request body before we return it.
+     *
+     * @return string
      */
     public function getRequest($deflate = null)
     {

@@ -174,7 +174,7 @@ function go_home() {
 /**
  * Get an instance of SAML2 Auth object
  *
- * @return False|\OneLogin_Saml2_Auth
+ * @return False|\OneLogin\Saml2\Auth
  */
 function instance() {
 	static $instance;
@@ -195,7 +195,7 @@ function instance() {
 	}
 
 	if ( empty( $instance ) ) {
-		$instance = new \OneLogin_Saml2_Auth( $config );
+		$instance = new \OneLogin\Saml2\Auth( $config );
 	}
 
 	return $instance;
@@ -330,11 +330,11 @@ function get_sso_user() {
 /**
  * Create a user and/or update his role based on SAML response
  *
- * @param \OneLogin_Saml2_Auth $saml
+ * @param \OneLogin\Saml2\Auth $saml
  *
  * @return \WP_User|\WP_Error
  */
-function get_or_create_wp_user( \OneLogin_Saml2_Auth $saml ) {
+function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 	$map        = get_attribute_map();
 	$attributes = $saml->getAttributes();
