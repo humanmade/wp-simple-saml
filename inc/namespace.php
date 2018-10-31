@@ -41,7 +41,7 @@ function bootstrap() {
 	add_action( 'template_redirect', __NAMESPACE__ . '\\endpoint', 9 );
 	add_action( 'login_message', __NAMESPACE__ . '\\login_form_link' );
 	add_action( 'wp_authenticate', __NAMESPACE__ . '\\authenticate_with_sso' );
-	add_action( 'wp_logout', __NAMESPACE__ . '\\go_home' );
+	add_action( 'wp_logout', __NAMESPACE__ . '\\logout' );
 
 	add_action( 'wpsimplesaml_action_login', __NAMESPACE__ . '\\cross_site_sso' );
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\cross_site_sso' );
@@ -578,6 +578,14 @@ function signon( $user ) {
 function signout() {
 	wp_destroy_current_session();
 	wp_clear_auth_cookie();
+}
+
+/**
+ * Send LogoutRequest to IdP when user logs out.
+ */
+function logout() {
+	$redirect_url = get_redirection_url();
+	instance()->logout( $redirect_url );
 }
 
 /**
