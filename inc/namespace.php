@@ -45,9 +45,11 @@ function bootstrap() {
 
 	add_action( 'wpsimplesaml_action_login', __NAMESPACE__ . '\\cross_site_sso' );
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\cross_site_sso' );
+	add_action( 'wpsimplesaml_action_sls', __NAMESPACE__ . '\\cross_site_sso' );
 
 	add_action( 'wpsimplesaml_action_login', __NAMESPACE__ . '\\action_login' );
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\action_verify' );
+	add_action( 'wpsimplesaml_action_sls', __NAMESPACE__ . '\\action_sls' );
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
 	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
@@ -271,6 +273,43 @@ function action_verify() {
 	} elseif ( is_wp_error( $user ) ) {
 		wp_die( esc_html( $user->get_error_message() ) );
 	}
+}
+
+/**
+ * Handle sso/sls endpoint.
+ *
+ * @action wpsimplesaml_action_sls
+ */
+function action_sls() {
+	$saml = instance();
+
+	try {
+		/*
+		 * If it's logout request, we just clear the user session. The user will be redirected to
+		 * the IdP by the php-saml.
+		 * If it's logout responce, the IdP has ended user's session, php-saml will not do
+		 * anything else, so we will redirect at the end.
+		 */
+		$saml->processSLO( false, null, true, __NAMESPACE__ . '\signout' );
+	} catch ( \Exception $e ) {
+		$errors = $e->getMessage();
+	}
+
+	if ( $errors ) {
+		/* translators: %s = error message */
+		wp_die( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) );
+	}
+
+	if ( ! empty( $saml->getErrors() ) ) {
+		$errors = implode( ', ', $saml->getErrors() );
+
+		/* translators: %s = error message */
+		wp_die( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) );
+	}
+
+	$redirect_url = get_redirection_url();
+	wp_safe_redirect( $redirect_url );
+	exit;
 }
 
 /**
@@ -531,6 +570,14 @@ function map_user_roles( $user, array $attributes ) {
  */
 function signon( $user ) {
 	wp_set_auth_cookie( $user->ID, true, is_ssl() );
+}
+
+/**
+ * Sign out the user, delete session and auth cookie.
+ */
+function signout() {
+	wp_destroy_current_session();
+	wp_clear_auth_cookie();
 }
 
 /**
