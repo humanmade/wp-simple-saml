@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 namespace HumanMade\SimpleSaml;
 
+use OneLogin\Saml2\Auth;
+
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
 /**
@@ -195,7 +197,7 @@ function instance() {
 	}
 
 	if ( empty( $instance ) ) {
-		$instance = new \OneLogin\Saml2\Auth( $config );
+		$instance = new Auth( $config );
 	}
 
 	return $instance;
