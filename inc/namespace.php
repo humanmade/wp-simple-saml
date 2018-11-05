@@ -729,7 +729,8 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 	}
 
 	if ( is_sso_enabled_network_wide() ) {
-		$network_roles = [];
+		// $network_roles = [];
+		// removed because it's not previously named and breaks if you have $roles['sites'] and $roles['network'] in the same array.  Keys are not numeric.
 
 		// If this is a multisite, the roles array may contain a 'network' key and a 'sites' key. Otherwise, if
 		// it is a flat array, use it to add the roles for all sites
