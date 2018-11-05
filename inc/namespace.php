@@ -499,9 +499,9 @@ function map_user_roles( $user, array $attributes ) {
 
 				foreach ( $site_roles as $role ) {
 					// modified to include multiple roles per site.  Our sites included multiple roles in an associative array.
-					if (is_array($role)) {
-						foreach ($role as $r) {
-							$user->add_role($r);
+					if ( is_array( $role ) ) {
+						foreach ( $role as $r ) {
+							$user->add_role( $r );
 						}
 					} else {
 						$user->add_role( $role );
