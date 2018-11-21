@@ -507,6 +507,8 @@ function map_user_roles( $user, array $attributes ) {
 						$user->add_role( $role );
 					}
 				}
+				// Switch back to original blog in the situation where the user has multiple blogs.
+				restore_current_blog();
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
 			$all_site_ids = new \WP_Site_Query( [
