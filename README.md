@@ -122,3 +122,11 @@ Created by Human Made for network-wide SAML SSO Integrations, because of the lac
 Written and maintained by [Shady Sharaf](https://github.com/shadyvb). Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
 
 Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
+
+## Changelog
+
+- 0.2
+  - Updating PHP SAML library to 3.0 to support PHP 7.x
+
+- 0.1
+  - Stable version
