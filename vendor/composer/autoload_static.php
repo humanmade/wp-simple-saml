@@ -4,51 +4,55 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f
+class ComposerStaticInitcf199352db8eb5d7bbaa94f1e0dc09f8
 {
     public static $prefixLengthsPsr4 = array (
-        'P' => 
+        'R' => 
         array (
-            'PSR2R\\' => 6,
+            'RobRichards\\XMLSecLibs\\' => 23,
+        ),
+        'O' => 
+        array (
+            'OneLogin\\' => 9,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'PSR2R\\' => 
+        'RobRichards\\XMLSecLibs\\' => 
         array (
-            0 => __DIR__ . '/..' . '/fig-r/psr2r-sniffer/PSR2R',
+            0 => __DIR__ . '/..' . '/robrichards/xmlseclibs/src',
+        ),
+        'OneLogin\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/onelogin/php-saml/src',
         ),
     );
 
     public static $classMap = array (
-        'OneLogin_Saml2_Auth' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Auth.php',
-        'OneLogin_Saml2_AuthnRequest' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/AuthnRequest.php',
-        'OneLogin_Saml2_Constants' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Constants.php',
-        'OneLogin_Saml2_Error' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Error.php',
-        'OneLogin_Saml2_IdPMetadataParser' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/IdPMetadataParser.php',
-        'OneLogin_Saml2_LogoutRequest' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/LogoutRequest.php',
-        'OneLogin_Saml2_LogoutResponse' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/LogoutResponse.php',
-        'OneLogin_Saml2_Metadata' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Metadata.php',
-        'OneLogin_Saml2_Response' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Response.php',
-        'OneLogin_Saml2_Settings' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Settings.php',
-        'OneLogin_Saml2_Utils' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Utils.php',
-        'OneLogin_Saml2_ValidationError' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml2/Error.php',
-        'OneLogin_Saml_AuthRequest' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml/AuthRequest.php',
-        'OneLogin_Saml_Metadata' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml/Metadata.php',
-        'OneLogin_Saml_Response' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml/Response.php',
-        'OneLogin_Saml_Settings' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml/Settings.php',
-        'OneLogin_Saml_XmlSec' => __DIR__ . '/..' . '/onelogin/php-saml/lib/Saml/XmlSec.php',
-        'XMLSecEnc' => __DIR__ . '/..' . '/onelogin/php-saml/extlib/xmlseclibs/xmlseclibs.php',
-        'XMLSecurityDSig' => __DIR__ . '/..' . '/onelogin/php-saml/extlib/xmlseclibs/xmlseclibs.php',
-        'XMLSecurityKey' => __DIR__ . '/..' . '/onelogin/php-saml/extlib/xmlseclibs/xmlseclibs.php',
+        'OneLogin\\Saml2\\Auth' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Auth.php',
+        'OneLogin\\Saml2\\AuthnRequest' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/AuthnRequest.php',
+        'OneLogin\\Saml2\\Constants' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Constants.php',
+        'OneLogin\\Saml2\\Error' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Error.php',
+        'OneLogin\\Saml2\\IdPMetadataParser' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/IdPMetadataParser.php',
+        'OneLogin\\Saml2\\LogoutRequest' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/LogoutRequest.php',
+        'OneLogin\\Saml2\\LogoutResponse' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/LogoutResponse.php',
+        'OneLogin\\Saml2\\Metadata' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Metadata.php',
+        'OneLogin\\Saml2\\Response' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Response.php',
+        'OneLogin\\Saml2\\Settings' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Settings.php',
+        'OneLogin\\Saml2\\Utils' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/Utils.php',
+        'OneLogin\\Saml2\\ValidationError' => __DIR__ . '/..' . '/onelogin/php-saml/src/Saml2/ValidationError.php',
+        'RobRichards\\XMLSecLibs\\Utils\\XPath' => __DIR__ . '/..' . '/robrichards/xmlseclibs/src/Utils/XPath.php',
+        'RobRichards\\XMLSecLibs\\XMLSecEnc' => __DIR__ . '/..' . '/robrichards/xmlseclibs/src/XMLSecEnc.php',
+        'RobRichards\\XMLSecLibs\\XMLSecurityDSig' => __DIR__ . '/..' . '/robrichards/xmlseclibs/src/XMLSecurityDSig.php',
+        'RobRichards\\XMLSecLibs\\XMLSecurityKey' => __DIR__ . '/..' . '/robrichards/xmlseclibs/src/XMLSecurityKey.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitedd868872a7e2fbf5aa93bdc5dea705f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitcf199352db8eb5d7bbaa94f1e0dc09f8::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitcf199352db8eb5d7bbaa94f1e0dc09f8::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitcf199352db8eb5d7bbaa94f1e0dc09f8::$classMap;
 
         }, null, ClassLoader::class);
     }

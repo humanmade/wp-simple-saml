@@ -6,5 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'PSR2R\\' => array($vendorDir . '/fig-r/psr2r-sniffer/PSR2R'),
+    'RobRichards\\XMLSecLibs\\' => array($vendorDir . '/robrichards/xmlseclibs/src'),
+    'OneLogin\\' => array($vendorDir . '/onelogin/php-saml/src'),
 );

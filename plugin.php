@@ -31,7 +31,10 @@ namespace HumanMade\SimpleSaml;
 
 require_once __DIR__ . '/inc/namespace.php';
 require_once __DIR__ . '/inc/admin/namespace.php';
-require_once __DIR__ . '/vendor/autoload.php';
+
+if ( ! class_exists( '\\OneLogin\\Saml2\\Auth' ) ) {
+	require_once __DIR__ . '/vendor/autoload.php';
+}
 
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\Admin\\admin_bootstrap' );

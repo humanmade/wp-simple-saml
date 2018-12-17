@@ -1,46 +1,43 @@
 [
     {
         "name": "onelogin/php-saml",
-        "version": "v2.12.0",
-        "version_normalized": "2.12.0.0",
+        "version": "v3.0.0",
+        "version_normalized": "3.0.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/onelogin/php-saml.git",
-            "reference": "9416fa739cff88ffcc472967cec048a774b97e0f"
+            "reference": "920c2240e48c9a74aad4129720f48fbf3d5fee47"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/onelogin/php-saml/zipball/9416fa739cff88ffcc472967cec048a774b97e0f",
-            "reference": "9416fa739cff88ffcc472967cec048a774b97e0f",
+            "url": "https://api.github.com/repos/onelogin/php-saml/zipball/920c2240e48c9a74aad4129720f48fbf3d5fee47",
+            "reference": "920c2240e48c9a74aad4129720f48fbf3d5fee47",
             "shasum": ""
         },
         "require": {
-            "ext-curl": "*",
-            "ext-dom": "*",
-            "ext-mcrypt": "*",
-            "ext-openssl": "*",
-            "php": ">=5.3.2"
+            "php": ">=5.4",
+            "robrichards/xmlseclibs": "^3.0"
         },
         "require-dev": {
-            "pdepend/pdepend": "1.1.0",
-            "phploc/phploc": "*",
-            "phpunit/phpunit": "4.8",
-            "satooshi/php-coveralls": "1.0.1",
-            "sebastian/phpcpd": "*",
-            "squizlabs/php_codesniffer": "2.9.0"
+            "pdepend/pdepend": "^2.5.0",
+            "php-coveralls/php-coveralls": "^1.0.2 || ^2.0",
+            "phploc/phploc": "^2.1 || ^3.0 || ^4.0",
+            "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.5 || ^7.1",
+            "sebastian/phpcpd": "^2.0 || ^3.0 || ^4.0",
+            "squizlabs/php_codesniffer": "^3.1.1"
         },
         "suggest": {
-            "ext-gettext": "Install gettext and php5-gettext libs to handle translations"
+            "ext-curl": "Install curl lib to be able to use the IdPMetadataParser for parsing remote XMLs",
+            "ext-gettext": "Install gettext and php5-gettext libs to handle translations",
+            "ext-openssl": "Install openssl lib in order to handle with x509 certs (require to support sign and encryption)"
         },
-        "time": "2017-11-06T17:44:03+00:00",
+        "time": "2018-10-02T16:02:37+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
-            "classmap": [
-                "extlib/xmlseclibs",
-                "lib/Saml",
-                "lib/Saml2"
-            ]
+            "psr-4": {
+                "OneLogin\\": "src/"
+            }
         },
         "notification-url": "https://packagist.org/downloads/",
         "license": [
@@ -55,178 +52,43 @@
         ]
     },
     {
-        "name": "squizlabs/php_codesniffer",
-        "version": "3.2.3",
-        "version_normalized": "3.2.3.0",
+        "name": "robrichards/xmlseclibs",
+        "version": "3.0.2",
+        "version_normalized": "3.0.2.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-            "reference": "4842476c434e375f9d3182ff7b89059583aa8b27"
+            "url": "https://github.com/robrichards/xmlseclibs.git",
+            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/4842476c434e375f9d3182ff7b89059583aa8b27",
-            "reference": "4842476c434e375f9d3182ff7b89059583aa8b27",
+            "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
+            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
             "shasum": ""
         },
         "require": {
-            "ext-simplexml": "*",
-            "ext-tokenizer": "*",
-            "ext-xmlwriter": "*",
-            "php": ">=5.4.0"
+            "ext-openssl": "*",
+            "php": ">= 5.4"
         },
-        "require-dev": {
-            "phpunit/phpunit": "^4.0 || ^5.0 || ^6.0 || ^7.0"
-        },
-        "time": "2018-02-20T21:35:23+00:00",
-        "bin": [
-            "bin/phpcs",
-            "bin/phpcbf"
-        ],
+        "time": "2018-09-27T13:24:13+00:00",
         "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "3.x-dev"
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "RobRichards\\XMLSecLibs\\": "src"
             }
         },
-        "installation-source": "dist",
         "notification-url": "https://packagist.org/downloads/",
         "license": [
             "BSD-3-Clause"
         ],
-        "authors": [
-            {
-                "name": "Greg Sherwood",
-                "role": "lead"
-            }
-        ],
-        "description": "PHP_CodeSniffer tokenizes PHP, JavaScript and CSS files and detects violations of a defined set of coding standards.",
-        "homepage": "http://www.squizlabs.com/php-codesniffer",
+        "description": "A PHP library for XML Security",
+        "homepage": "https://github.com/robrichards/xmlseclibs",
         "keywords": [
-            "phpcs",
-            "standards"
+            "security",
+            "signature",
+            "xml",
+            "xmldsig"
         ]
-    },
-    {
-        "name": "wp-coding-standards/wpcs",
-        "version": "0.14.1",
-        "version_normalized": "0.14.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards.git",
-            "reference": "cf6b310caad735816caef7573295f8a534374706"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/WordPress-Coding-Standards/WordPress-Coding-Standards/zipball/cf6b310caad735816caef7573295f8a534374706",
-            "reference": "cf6b310caad735816caef7573295f8a534374706",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3",
-            "squizlabs/php_codesniffer": "^2.9.0 || ^3.0.2"
-        },
-        "suggest": {
-            "dealerdirect/phpcodesniffer-composer-installer": "^0.4.3"
-        },
-        "time": "2018-02-16T01:57:48+00:00",
-        "type": "phpcodesniffer-standard",
-        "installation-source": "dist",
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Contributors",
-                "homepage": "https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/graphs/contributors"
-            }
-        ],
-        "description": "PHP_CodeSniffer rules (sniffs) to enforce WordPress coding conventions",
-        "keywords": [
-            "phpcs",
-            "standards",
-            "wordpress"
-        ]
-    },
-    {
-        "name": "fig-r/psr2r-sniffer",
-        "version": "0.5.0",
-        "version_normalized": "0.5.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/php-fig-rectified/psr2r-sniffer.git",
-            "reference": "ff4659fdb1ce8832a9e408a6e22aa05bc93efe10"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/php-fig-rectified/psr2r-sniffer/zipball/ff4659fdb1ce8832a9e408a6e22aa05bc93efe10",
-            "reference": "ff4659fdb1ce8832a9e408a6e22aa05bc93efe10",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.4.16",
-            "squizlabs/php_codesniffer": "^3.0"
-        },
-        "time": "2017-08-30T10:00:39+00:00",
-        "bin": [
-            "bin/tokenize",
-            "bin/sniff"
-        ],
-        "type": "phpcodesniffer-standard",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "PSR2R\\": "PSR2R"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Mark Scherer",
-                "homepage": "http://www.dereuromark.de",
-                "role": "Contributor"
-            }
-        ],
-        "description": "Code-Sniffer, Auto-Fixer and Tokenizer for PSR2-R",
-        "keywords": [
-            "codesniffer",
-            "cs"
-        ]
-    },
-    {
-        "name": "humanmade/coding-standards",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/humanmade/coding-standards.git",
-            "reference": "5471f1a1e9c24271541e969e612f0551972091f2"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/humanmade/coding-standards/zipball/5471f1a1e9c24271541e969e612f0551972091f2",
-            "reference": "5471f1a1e9c24271541e969e612f0551972091f2",
-            "shasum": ""
-        },
-        "require": {
-            "fig-r/psr2r-sniffer": "^0.5.0",
-            "squizlabs/php_codesniffer": "^3.1",
-            "wp-coding-standards/wpcs": "^0.14.0"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "^5.7"
-        },
-        "time": "2018-03-01T10:37:46+00:00",
-        "type": "project",
-        "installation-source": "source",
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "GPL-2.0-or-later"
-        ],
-        "description": "Human Made coding standards"
     }
 ]

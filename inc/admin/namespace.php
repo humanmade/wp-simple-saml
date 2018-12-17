@@ -4,7 +4,8 @@ namespace HumanMade\SimpleSaml\Admin;
 
 use function HumanMade\SimpleSaml\instance;
 use function HumanMade\SimpleSaml\is_sso_enabled_network_wide;
-use OneLogin_Saml2_IdPMetadataParser;
+
+use OneLogin\Saml2\IdPMetadataParser;
 
 /**
  * Bootstrap config/admin related actions
@@ -44,7 +45,7 @@ function get_config() {
 		$idp_xml_file = apply_filters( 'wpsimplesaml_idp_metadata_xml_path', '' );
 
 		if ( $idp_xml_file && file_exists( $idp_xml_file ) ) {
-			$settings = OneLogin_Saml2_IdPMetadataParser::parseFileXML( $idp_xml_file );
+			$settings = IdPMetadataParser::parseFileXML( $idp_xml_file );
 		}
 
 		if ( empty( $idp_xml_file ) ) {
@@ -54,7 +55,7 @@ function get_config() {
 			 * @return string XML string for IdP metadata
 			 */
 			$idp_xml  = trim( apply_filters( 'wpsimplesaml_idp_metadata_xml', '' ) );
-			$settings = OneLogin_Saml2_IdPMetadataParser::parseXML( $idp_xml );
+			$settings = IdPMetadataParser::parseXML( $idp_xml );
 		}
 	} catch ( \Exception $e ) {
 		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
