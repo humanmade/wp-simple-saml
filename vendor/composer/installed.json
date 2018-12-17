@@ -1,5 +1,45 @@
 [
     {
+        "name": "robrichards/xmlseclibs",
+        "version": "3.0.2",
+        "version_normalized": "3.0.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/robrichards/xmlseclibs.git",
+            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
+            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
+            "shasum": ""
+        },
+        "require": {
+            "ext-openssl": "*",
+            "php": ">= 5.4"
+        },
+        "time": "2018-09-27T13:24:13+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "RobRichards\\XMLSecLibs\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "description": "A PHP library for XML Security",
+        "homepage": "https://github.com/robrichards/xmlseclibs",
+        "keywords": [
+            "security",
+            "signature",
+            "xml",
+            "xmldsig"
+        ]
+    },
+    {
         "name": "onelogin/php-saml",
         "version": "v3.0.0",
         "version_normalized": "3.0.0.0",
@@ -49,46 +89,6 @@
             "SAML2",
             "onelogin",
             "saml"
-        ]
-    },
-    {
-        "name": "robrichards/xmlseclibs",
-        "version": "3.0.2",
-        "version_normalized": "3.0.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/robrichards/xmlseclibs.git",
-            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/robrichards/xmlseclibs/zipball/1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
-            "reference": "1f4de0c0d121922aafd8c62c2a9f5e528830cf38",
-            "shasum": ""
-        },
-        "require": {
-            "ext-openssl": "*",
-            "php": ">= 5.4"
-        },
-        "time": "2018-09-27T13:24:13+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "RobRichards\\XMLSecLibs\\": "src"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "description": "A PHP library for XML Security",
-        "homepage": "https://github.com/robrichards/xmlseclibs",
-        "keywords": [
-            "security",
-            "signature",
-            "xml",
-            "xmldsig"
         ]
     }
 ]

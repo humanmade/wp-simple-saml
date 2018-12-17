@@ -1,17 +1,2 @@
-vendor
-!vendor/onelogin
-vendor/onelogin/php-saml/.coveralls.yml
-vendor/onelogin/php-saml/.gitignore
-vendor/onelogin/php-saml/.travis.yml
-vendor/onelogin/php-saml/CHANGELOG
-vendor/onelogin/php-saml/advanced_settings_example.php
-vendor/onelogin/php-saml/certs/
-vendor/onelogin/php-saml/demo-old/
-vendor/onelogin/php-saml/demo1/
-vendor/onelogin/php-saml/demo2/
-vendor/onelogin/php-saml/docs/
-vendor/onelogin/php-saml/endpoints/
-vendor/onelogin/php-saml/settings_example.php
-vendor/onelogin/php-saml/tests/
 node_modules
 .idea
