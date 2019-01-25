@@ -33,6 +33,10 @@ use OneLogin\Saml2\Auth;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
+// 20190125 JLB - Issue #28 - Begin
+include( ABSPATH . '/wp-includes/ms-load.php' );
+// 20190125 JLB - Issue #28 - End
+
 /**
  * Bootstrap the plugin, adding required actions and filters
  *
@@ -616,6 +620,12 @@ function cross_site_sso_redirect( $url ) {
  */
 function get_blog_id( $url ) {
 	$fragments = wp_parse_url( $url );
+	
+	// 20190125 JLB - Issue #28 - Begin
+        if ( ! is_multisite() ) {
+                return 1;
+        }
+  	// 20190125 JLB - Issue #28 - End
 
 	if ( empty( $fragments ) || empty( $fragments['host'] ) ) {
 		return 0;
