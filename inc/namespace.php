@@ -584,6 +584,11 @@ function signout() {
  * Send LogoutRequest to IdP when user logs out.
  */
 function logout() {
+	// Bail if no SAML2_Auth instance is available, mainly if no configuration was found
+	if ( ! instance() ) {
+		return;
+	}
+
 	$redirect_url = get_redirection_url();
 	instance()->logout( $redirect_url );
 }
