@@ -73,16 +73,10 @@ function get_config() {
 		return [];
 	}
 
-	$settings['sp'] = [
-		'entityId'                 => $sp_home_url,
-		'assertionConsumerService' => [
-			'url' => $sp_base_url . 'verify',
-		],
-		'singleLogoutService'      => [
-			'url' => $sp_base_url . 'sls',
-		],
-		'NameIDFormat'             => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
-	];
+	$settings['sp']['entityId']                 = $sp_home_url;
+	$settings['sp']['assertionConsumerService'] = [ 'url' => $sp_base_url . 'verify' ];
+	$settings['sp']['singleLogoutService']      = [ 'url' => $sp_base_url . 'sls' ];
+	$settings['sp']['NameIDFormat']             = 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 
 	return $settings;
 }
