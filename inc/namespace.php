@@ -297,14 +297,14 @@ function action_sls() {
 
 	if ( $errors ) {
 		/* translators: %s = error message */
-		wp_die( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) );
+		wp_die( sprintf( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) ) );
 	}
 
 	if ( ! empty( $saml->getErrors() ) ) {
 		$errors = implode( ', ', $saml->getErrors() );
 
 		/* translators: %s = error message */
-		wp_die( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) );
+		wp_die( sprintf( esc_html__( 'Error: Could not parse the logout response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) ) );
 	}
 
 	$redirect_url = get_redirection_url();
