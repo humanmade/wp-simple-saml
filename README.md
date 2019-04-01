@@ -42,7 +42,7 @@ add_filter( 'wpsimplesaml_network_activated', '__return_true' )
 
 ## Configuration
 
-There is two ways to configure the plugin, either from the admin interrface or using filters, both can be used interchangably as the project requires, usually filters prevail database settings though.
+There is two ways to configure the plugin, either from the admin interface or using filters, both can be used interchangably as the project requires, usually filters prrevail database settings though.
 
 ### Admin configurations
 
