@@ -125,6 +125,10 @@ Interested in joining in on the fun? [Join us, and become human!](https://hmn.md
 
 ## Changelog
 
+- 0.3
+  - Fix compatibilty with WordPress single site (no multisite).
+  - Fix error caused by using WordPress dashboard function outside the dashboard.
+
 - 0.2.1
   - Fix missing composer dependency and updated .gitignore
 
