@@ -622,8 +622,11 @@ function cross_site_sso_redirect( $url ) {
  * @return int Blog ID if found, 0 if not
  */
 function get_blog_id( $url ) {
-	$fragments = wp_parse_url( $url );
+	if ( ! is_multisite() ) {
+		return get_current_blog_id();
+	}
 
+	$fragments = wp_parse_url( $url );
 	if ( empty( $fragments ) || empty( $fragments['host'] ) ) {
 		return 0;
 	}
