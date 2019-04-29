@@ -5,7 +5,6 @@
 	"keywords": [ "saml","wordpress","sso","onelogin","single-sign-on" ],
 	"homepage": "https://github.com/humanmade/wp-simple-saml",
 	"license": "GPL-3.0-or-later",
-	"version": "0.1.0",
 	"authors": [
 		{
 			"name": "Shady Sharaf",

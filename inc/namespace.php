@@ -53,6 +53,13 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
 	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
+
+	// is_plugin_active_for_network can only be used once the plugin.php file is
+	// included. More information can be found here:
+	// https://codex.wordpress.org/Function_Reference/is_plugin_active_for_network
+	if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+		require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+	}
 }
 
 /**
@@ -615,8 +622,11 @@ function cross_site_sso_redirect( $url ) {
  * @return int Blog ID if found, 0 if not
  */
 function get_blog_id( $url ) {
-	$fragments = wp_parse_url( $url );
+	if ( ! is_multisite() ) {
+		return get_current_blog_id();
+	}
 
+	$fragments = wp_parse_url( $url );
 	if ( empty( $fragments ) || empty( $fragments['host'] ) ) {
 		return 0;
 	}
