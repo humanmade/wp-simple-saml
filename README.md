@@ -42,7 +42,7 @@ add_filter( 'wpsimplesaml_network_activated', '__return_true' )
 
 ## Configuration
 
-There is two ways to configure the plugin, either from the admin interrface or using filters, both can be used interchangably as the project requires, usually filters prrevail database settings though.
+There is two ways to configure the plugin, either from the admin interface or using filters, both can be used interchangably as the project requires, usually filters prevail database settings though.
 
 ### Admin configurations
 
@@ -124,6 +124,10 @@ Written and maintained by [Shady Sharaf](https://github.com/shadyvb). Thanks to 
 Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
 
 ## Changelog
+
+- 0.3
+  - Fix compatibilty with WordPress single site (no multisite).
+  - Fix error caused by using WordPress dashboard function outside the dashboard.
 
 - 0.2.1
   - Fix missing composer dependency and updated .gitignore
