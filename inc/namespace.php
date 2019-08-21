@@ -373,7 +373,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	}
 
 	// No user yet ? lets create a new one.
-	if ( empty( $user ) ) {
+	if ( empty( $user ) && Admin\get_sso_settings( 'sso_create_if_not_exists' ) ) {
 
 		$first_name = isset( $map['first_name'], $attributes[ $map['first_name'] ] ) && is_array( $attributes[ $map['first_name'] ] ) ? reset( $attributes[ $map['first_name'] ] ) : '';
 		$last_name  = isset( $map['last_name'], $attributes[ $map['last_name'] ] ) && is_array( $attributes[ $map['last_name'] ] ) ? reset( $attributes[ $map['last_name'] ] ) : '';
