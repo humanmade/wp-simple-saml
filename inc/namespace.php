@@ -350,12 +350,11 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 	// Check whether email is the unique identifier set in SAML IDP
 	$is_email_auth = 'emailAddress' === substr( $saml->getNameIdFormat(), - strlen( 'emailAddress' ) );
+	$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
 
-	if ( $is_email_auth ) {
-		$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
-	} else {
+	if ( $is_email_auth && !$email ) {
 		$email_field = $map['user_email'];
-		$email       = current( (array) $saml->getAttribute( $email_field ) );
+		$email = current( (array) $saml->getAttribute( $email_field ) );
 	}
 
 	/**
