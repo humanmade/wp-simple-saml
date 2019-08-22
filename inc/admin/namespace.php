@@ -216,7 +216,7 @@ function settings_fields() {
 
 	register_setting( $settings_section, 'sso_create_if_not_exists', 'absint' );
 	add_settings_field( 'sso_create_if_not_exists', __( 'SSO Create user if it does not exists', 'wp-simple-saml' ), function () use ( $options ) {
-		$value   = $options['sso_create_if_not_exists'];
+		$value = $options['sso_create_if_not_exists'];
 		?>
 		<input type="checkbox" name="sso_create_if_not_exists" id="sso_create_if_not_exists" value="1" <?php checked( $value ); ?>>
 		<?php
