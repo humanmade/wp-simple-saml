@@ -192,7 +192,7 @@ function settings_fields() {
 
 	register_setting( $settings_section, 'sso_login_name' );
 	add_settings_field( 'sso_login_name', __( 'SSO Login Link Name', 'wp-simple-saml' ), function () use ( $options ) {
-		$value   = $options['sso_login_name'];
+		$value = $options['sso_login_name'];
 		?>
 		<input type="text" name="sso_login_name" id="sso_login_name" value="<?php echo esc_html( $value ); ?>" placeholder="SSO Login">
 		<?php
