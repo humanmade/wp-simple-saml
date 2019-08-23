@@ -139,7 +139,7 @@ function login_form_link() {
 		 *
 		 * @return string Text to be used for the login button
 		 */
-		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( 'SSO Login', 'wp-simple-saml' ) ) )
+		esc_html( apply_filters( 'wpsimplesaml_log_in_text', __( Admin\get_sso_settings( 'sso_login_name' ), 'wp-simple-saml' ) ) )
 	);
 
 	echo $output; // WPCS: xss ok
