@@ -3,7 +3,7 @@
 Plugin Name: WP Simple SAML
 Description: Integrate SAML 2.0 IDP without the hassle
 Author: Shady Sharaf, Human Made
-Version: 0.3
+Version: 0.4.1
 Author URI: http://hmn.md
 Text Domain: wp-simple-saml
 Domain Path: /language/
