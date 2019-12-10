@@ -416,7 +416,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	} else {
 		foreach ( $user_data as $key => $value ) {
 			if ( ! $value ) {
-				$user_data[ $key ] = $user -> $key;
+				$user_data[ $key ] = $user->$key;
 			}
 		}
 
