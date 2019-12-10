@@ -568,14 +568,14 @@ function cross_site_sso_redirect( $url ) {
 		$allowed_hosts[] = $host;
 	}
 
-	$approved = false
-	foreach ($allowed_hosts as $pattern) {
-		if fnmatch($pattern, $host) {
+	$approved = false;
+	foreach ( $allowed_hosts as $pattern ) {
+		if ( fnmatch( $pattern, $host ) ) {
 			$approved = true;
 		}
 	}
 
-	if (!$approved) {
+	if ( ! $approved ) {
 		/* translators: %s is domain of the blacklisted site */
 		wp_die( sprintf( esc_html__( '%s is not a whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
 	}
