@@ -29,8 +29,8 @@ WordPress Simple SAML uses [OneLogin's PHP-SAML](https://github.com/onelogin/php
 ## Getting Set Up
 
 
-- Copy the plugin files to your `wp-content/plugins` directory
-- Activate the plugin
+- Copy the plugin files to your `wp-content/plugins` directory.
+- Activate the plugin.
 - Head over to [configuration screen](#Configuration).
 - Send Service Provider metadata URL ( or content ) to your Identity Provider authority (IdP) ( find the link in settings page ).
 
@@ -106,10 +106,10 @@ This installs Human made's version of WordPress Coding Standards via PHP Code Sn
 ### Workflow
 
 - Find an issue you'd like to help with, or create a new one for the change you'd like to introduce.
-- Fork the repo to your own account
-- Issue pull-requests from your fork to ours
-- Tag the issue you're trying to resolve in your pull-request for some context
-- Make sure the pull-request passed all Travis checks
+- Fork the repo to your own account.
+- Issue pull-requests from your fork to ours.
+- Tag the issue you're trying to resolve in your pull-request for some context.
+- Make sure the pull-request passed all Travis checks.
 - Tag any of the contributors for a review.
 
 ## Next
@@ -121,7 +121,7 @@ Created by Human Made for network-wide SAML SSO Integrations, because of the lac
 
 Written and maintained by [Shady Sharaf](https://github.com/shadyvb). Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
 
-Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
+Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/).
 
 ## Changelog
 
@@ -136,4 +136,4 @@ Interested in joining in on the fun? [Join us, and become human!](https://hmn.md
   - Updating PHP SAML library to 3.0 to support PHP 7.x
 
 - 0.1
-  - Stable version
+  - Stable version.
