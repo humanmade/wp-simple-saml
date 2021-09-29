@@ -513,9 +513,10 @@ function map_user_roles( $user, array $attributes ) {
 			$all_site_ids = new \WP_Site_Query( [
 				'network' => get_network()->id,
 				'fields'  => 'ids',
+				'number'  => 999,
 			] );
 
-			foreach ( $all_site_ids as $site_id ) {
+			foreach ( $all_site_ids->sites as $site_id ) {
 				switch_to_blog( $site_id );
 				$user->for_site( $site_id );
 				$user->set_role( reset( $roles['network'] ) );
