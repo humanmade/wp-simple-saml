@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace HumanMade\SimpleSaml;
 
 use OneLogin\Saml2\Auth;
+use OneLogin\Saml2\Response as SAML2Response;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
@@ -316,10 +317,36 @@ function get_sso_user() {
 	$saml = instance();
 
 	try {
+		$config = Admin\get_config();
+		if ( is_wp_error( $config ) ) {
+			return new \WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
+		}
+
+		// Manually verify the Destination attribute, and spoof the current URL.
+		//
+		// Due to how cross-site SSO works, the SAML library will attempt to validate
+		// the Destination in the SAMLResponse against the current URL. That will fail
+		// when cross-site SSO is used, as the current URL does not match the SAML
+		// Destination (which is the value of `sso_sp_base`). Instead we fake the
+		// current URL to match that of `sso_sp_base`.
+		//
+		// This is low-risk, as if the Destination validates against the `sso_sp_base`,
+		// it should be safe to also assume it as safe to be used on the current URL too.
+		$response = new SAML2Response( $saml->getSettings(), $_POST['SAMLResponse'] );
+		if ( $response->getXMLDocument()->documentElement->hasAttribute( 'Destination' ) ) {
+			$host = parse_url( $config['sp']['assertionConsumerService']['url'], PHP_URL_HOST );
+			$original_host = $_SERVER['HTTP_HOST'];
+			$_SERVER['HTTP_HOST'] = $host;
+
+		}
 		$saml->processResponse();
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
 		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+	} finally {
+		if ( isset( $original_host ) ) {
+			$_SERVER['HTTP_HOST'] = $original_host;
+		}
 	}
 
 	if ( ! empty( $saml->getErrors() ) ) {
