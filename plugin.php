@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 namespace HumanMade\SimpleSaml;
 
+use WP_CLI;
+
 require_once __DIR__ . '/inc/namespace.php';
 require_once __DIR__ . '/inc/admin/namespace.php';
 
@@ -38,3 +40,10 @@ if ( ! class_exists( '\\OneLogin\\Saml2\\Auth' ) ) {
 
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\Admin\\admin_bootstrap' );
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once __DIR__ . '/inc/class-simple-saml-command.php';
+	require_once __DIR__ . '/inc/class-response-command.php';
+	WP_CLI::add_command( 'simple-saml', 'HumanMade\\SimpleSaml\\Simple_Saml_Command' );
+	WP_CLI::add_command( 'simple-saml response', 'HumanMade\\SimpleSaml\\Response_Command' );
+}
