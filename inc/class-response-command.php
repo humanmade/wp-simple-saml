@@ -395,7 +395,7 @@ class Response_Command extends WP_CLI_Command {
 	 *
 	 * @return void|\OneLogin\Saml2\Auth|\WP_Error SAML2 Auth object, or WordPress error.
 	 *
-	 * @throws WP_CLI\ExitException
+	 * @throws WP_CLI\ExitException If error.
 	 */
 	private function _process_response( $args, $assoc_args ) {
 		$this->_validate_response( $args, $assoc_args );
@@ -422,7 +422,7 @@ class Response_Command extends WP_CLI_Command {
 	 *
 	 * @return void
 	 *
-	 * @throws WP_CLI\ExitException
+	 * @throws WP_CLI\ExitException If response invalid.
 	 */
 	private function _validate_response( $args, $assoc_args ) {
 		$file = $assoc_args['file'] ?? 'saml.txt';
