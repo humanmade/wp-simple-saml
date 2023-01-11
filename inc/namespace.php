@@ -580,7 +580,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host          = wp_parse_url( $url, PHP_URL_HOST );
-	$allowed_hosts = explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) );
+	$allowed_hosts = array_map( 'trim', explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) ) );
 
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
