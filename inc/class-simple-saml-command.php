@@ -1,4 +1,7 @@
 <?php
+/**
+ * WP Simple SAML WP-CLI command class.
+ */
 
 namespace HumanMade\SimpleSaml;
 
@@ -69,6 +72,9 @@ class Simple_Saml_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand attribute-mapping
 	 * @alias attribute-map
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function attribute_map( $args, $assoc_args ) {
 		$map = get_attribute_map();
@@ -89,6 +95,9 @@ class Simple_Saml_Command extends WP_CLI_Command {
 	 *                          cacheDuration="PT604800S"
 	 *                          entityID="php-saml">
 	 *     ...
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function metadata( $args, $assoc_args ) {
 		$metadata = get_metadata();
