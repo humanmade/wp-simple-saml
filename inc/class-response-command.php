@@ -1,4 +1,7 @@
 <?php
+/**
+ * WP Simple SAML Response WP-CLI command class.
+ */
 
 namespace HumanMade\SimpleSaml;
 
@@ -53,6 +56,11 @@ use WP_CLI_Command;
  */
 class Response_Command extends WP_CLI_Command {
 
+	/**
+	 * Decoded SAML response data.
+	 *
+	 * @var string
+	 */
 	private $response;
 
 	/**
@@ -64,7 +72,7 @@ class Response_Command extends WP_CLI_Command {
 	 * : The name of the attribute to get.
 	 *
 	 * [--file=<value>]
-	 * : The name of the SAML response file to use. If omitted, it will look for 'response.txt'.
+	 * : The name of the SAML response file to use. If omitted, it will look for 'saml.txt'.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -75,6 +83,9 @@ class Response_Command extends WP_CLI_Command {
 	 *     # Get mail attribute from custom file.
 	 *     $ wp simple-saml response attribute mail --file=jane.saml
 	 *     jane@example.com
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function attribute( $args, $assoc_args ) {
 		if ( empty( $args[0] ) ) {
@@ -85,11 +96,11 @@ class Response_Command extends WP_CLI_Command {
 
 		$value = $saml->getAttribute( $args[0] );
 		if ( is_null( $value ) ) {
-			WP_CLI::warning(
+			WP_CLI::warning( sprintf(
 				/* translators: %s: Attribute name. */
 				__( 'Attribute "%s" missing.', 'wp-simple-saml' ),
 				$args[0]
-			);
+			) );
 
 			return;
 		}
@@ -111,7 +122,7 @@ class Response_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--file=<value>]
-	 * : The name of the SAML response file to use. If omitted, it will look for 'response.txt'.
+	 * : The name of the SAML response file to use. If omitted, it will look for 'saml.txt'.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -160,6 +171,9 @@ class Response_Command extends WP_CLI_Command {
 	 *     # Get all attributes as JSON.
 	 *     $ wp simple-saml response attributes --format=json
 	 *     {"user_login":"4815162342","user_email":"john@example.com","first_name":"John","last_name":"Doe"}
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function attributes( $args, $assoc_args ) {
 		$saml = $this->_process_response( $args, $assoc_args );
@@ -182,7 +196,7 @@ class Response_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--file=<value>]
-	 * : The name of the SAML response file to use. If omitted, it will look for 'response.txt'.
+	 * : The name of the SAML response file to use. If omitted, it will look for 'saml.txt'.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -203,6 +217,9 @@ class Response_Command extends WP_CLI_Command {
 	 *       <ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
 	 *         <ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
 	 *     ...
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function decode( $args, $assoc_args ) {
 		$this->_validate_response( $args, $assoc_args );
@@ -229,7 +246,7 @@ class Response_Command extends WP_CLI_Command {
 	 * : Limit the output to specific fields. Defaults to all fields.
 	 *
 	 * [--file=<value>]
-	 * : The name of the SAML response file to use. If omitted, it will look for 'response.txt'.
+	 * : The name of the SAML response file to use. If omitted, it will look for 'saml.txt'.
 	 *
 	 * [--format=<format>]
 	 * : Render output in a particular format.
@@ -281,6 +298,9 @@ class Response_Command extends WP_CLI_Command {
 	 *
 	 * @subcommand name-id-data
 	 * @alias nameid-data
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function name_id_data( $args, $assoc_args ) {
 		$saml = $this->_process_response( $args, $assoc_args );
@@ -301,7 +321,7 @@ class Response_Command extends WP_CLI_Command {
 	 * ## OPTIONS
 	 *
 	 * [--file=<value>]
-	 * : The name of the SAML response file to use. If omitted, it will look for 'response.txt'.
+	 * : The name of the SAML response file to use. If omitted, it will look for 'saml.txt'.
 	 *
 	 * [--yes]
 	 * : Answer yes to the confirmation message.
@@ -327,6 +347,9 @@ class Response_Command extends WP_CLI_Command {
 	 *          '_paths' =>
 	 *         array (
 	 *    ...
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
 	 */
 	public function process( $args, $assoc_args ) {
 		$saml = $this->_process_response( $args, $assoc_args );
@@ -338,6 +361,14 @@ class Response_Command extends WP_CLI_Command {
 		WP_CLI::print_value( $saml );
 	}
 
+	/**
+	 * Display given data according to passed arguments.
+	 *
+	 * @param array $format_args Arguments passed to the command (original order).
+	 * @param array $data        Data to display.
+	 *
+	 * @return void
+	 */
 	private function _display_data( $format_args, $data ) {
 		$fields = array_keys( $data );
 
@@ -345,10 +376,27 @@ class Response_Command extends WP_CLI_Command {
 		$formatter->display_item( $data );
 	}
 
+	/**
+	 * Return (first) attribute value.
+	 *
+	 * @param string|string[] $value One or more attribute values.
+	 *
+	 * @return string Attribute value.
+	 */
 	private function _get_attribute_value( $value ) {
 		return is_array( $value ) ? reset( $value ) : $value;
 	}
 
+	/**
+	 * Validate and process SAML response data and return SAML2 Auth object.
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
+	 *
+	 * @return void|\OneLogin\Saml2\Auth|\WP_Error SAML2 Auth object, or WordPress error.
+	 *
+	 * @throws WP_CLI\ExitException
+	 */
 	private function _process_response( $args, $assoc_args ) {
 		$this->_validate_response( $args, $assoc_args );
 
@@ -366,6 +414,16 @@ class Response_Command extends WP_CLI_Command {
 		return $saml;
 	}
 
+	/**
+	 * Validate SAML response for subsequent use. If invalid, exit.
+	 *
+	 * @param array $args       Arguments passed to the command (original order).
+	 * @param array $assoc_args Arguments passed to the command (named).
+	 *
+	 * @return void
+	 *
+	 * @throws WP_CLI\ExitException
+	 */
 	private function _validate_response( $args, $assoc_args ) {
 		$file = $assoc_args['file'] ?? 'saml.txt';
 		if ( ! file_exists( $file ) || ! is_file( $file ) ) {
