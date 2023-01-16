@@ -408,7 +408,17 @@ class Response_Command extends WP_CLI_Command {
 
 		$saml = process_response();
 		if ( is_wp_error( $saml ) ) {
-			WP_CLI::error( $saml );
+			WP_CLI::error( $saml, false );
+
+			$saml = instance();
+			if ( $saml ) {
+				$error = $saml->getLastErrorReason();
+				if ( $error ) {
+					WP_CLI::print_value( $error );
+				}
+			}
+
+			exit( 1 );
 		}
 
 		return $saml;
