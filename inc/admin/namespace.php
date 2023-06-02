@@ -57,6 +57,10 @@ function get_config() {
 			$idp_xml  = trim( apply_filters( 'wpsimplesaml_idp_metadata_xml', '' ) );
 			$settings = IdPMetadataParser::parseXML( $idp_xml );
 		}
+	} catch ( \Throwable $e ) {
+		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
+			'errors' => $e->getMessage(),
+		] );
 	} catch ( \Exception $e ) {
 		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
 			'errors' => $e->getMessage(),
