@@ -284,14 +284,13 @@ function action_verify() {
 }
 
 /**
- * Output metadata of SP
+ * Get metadata of SP
  *
- * @action wpsimplesaml_action_metadata
+ * @return string|\WP_Error
  */
-function action_metadata() {
-	$auth     = instance();
-	$settings = $auth->getSettings();
-	$metadata = null;
+function get_metadata() {
+	$settings = instance()->getSettings();
+
 	try {
 		$metadata = $settings->getSPMetadata();
 		$errors   = $settings->validateMetadata( $metadata );
@@ -299,7 +298,26 @@ function action_metadata() {
 		$errors = $e->getMessage();
 	}
 
-	if ( $errors ) {
+	if ( empty( $errors ) ) {
+		return $metadata;
+	}
+
+	return new \WP_Error(
+		'wpsimplesaml_invalid_settings',
+		esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ),
+		$errors
+	);
+}
+
+/**
+ * Output metadata of SP
+ *
+ * @action wpsimplesaml_action_metadata
+ */
+function action_metadata() {
+	$metadata = get_metadata();
+
+	if ( is_wp_error( $metadata ) ) {
 		wp_die( esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ) );
 	}
 
@@ -309,12 +327,14 @@ function action_metadata() {
 }
 
 /**
- * Handle authentication responses
- *
- * @return \WP_User|\WP_Error
+ * @return Auth|\WP_Error
  */
-function get_sso_user() {
+function process_response() {
 	$saml = instance();
+
+	if ( ! $saml ) {
+		return new \WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
+	}
 
 	try {
 		$config = Admin\get_config();
@@ -358,6 +378,21 @@ function get_sso_user() {
 
 	if ( ! $saml->isAuthenticated() ) {
 		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
+	}
+
+	return $saml;
+}
+
+/**
+ * Handle authentication responses
+ *
+ * @return \WP_User|\WP_Error
+ */
+function get_sso_user() {
+	$saml = process_response();
+
+	if ( is_wp_error( $saml ) ) {
+		return $saml;
 	}
 
 	return get_or_create_wp_user( $saml );
@@ -580,7 +615,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host          = wp_parse_url( $url, PHP_URL_HOST );
-	$allowed_hosts = explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) );
+	$allowed_hosts = array_map( 'trim', explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) ) );
 
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
