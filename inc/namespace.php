@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 namespace HumanMade\SimpleSaml;
 
 use OneLogin\Saml2\Auth;
+use OneLogin\Saml2\Response as SAML2Response;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
@@ -283,14 +284,13 @@ function action_verify() {
 }
 
 /**
- * Output metadata of SP
+ * Get metadata of SP
  *
- * @action wpsimplesaml_action_metadata
+ * @return string|\WP_Error
  */
-function action_metadata() {
-	$auth     = instance();
-	$settings = $auth->getSettings();
-	$metadata = null;
+function get_metadata() {
+	$settings = instance()->getSettings();
+
 	try {
 		$metadata = $settings->getSPMetadata();
 		$errors   = $settings->validateMetadata( $metadata );
@@ -298,7 +298,26 @@ function action_metadata() {
 		$errors = $e->getMessage();
 	}
 
-	if ( $errors ) {
+	if ( empty( $errors ) ) {
+		return $metadata;
+	}
+
+	return new \WP_Error(
+		'wpsimplesaml_invalid_settings',
+		esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ),
+		$errors
+	);
+}
+
+/**
+ * Output metadata of SP
+ *
+ * @action wpsimplesaml_action_metadata
+ */
+function action_metadata() {
+	$metadata = get_metadata();
+
+	if ( is_wp_error( $metadata ) ) {
 		wp_die( esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ) );
 	}
 
@@ -308,18 +327,46 @@ function action_metadata() {
 }
 
 /**
- * Handle authentication responses
- *
- * @return \WP_User|\WP_Error
+ * @return Auth|\WP_Error
  */
-function get_sso_user() {
+function process_response() {
 	$saml = instance();
 
+	if ( ! $saml ) {
+		return new \WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
+	}
+
 	try {
+		$config = Admin\get_config();
+		if ( is_wp_error( $config ) ) {
+			return new \WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
+		}
+
+		// Manually verify the Destination attribute, and spoof the current URL.
+		//
+		// Due to how cross-site SSO works, the SAML library will attempt to validate
+		// the Destination in the SAMLResponse against the current URL. That will fail
+		// when cross-site SSO is used, as the current URL does not match the SAML
+		// Destination (which is the value of `sso_sp_base`). Instead we fake the
+		// current URL to match that of `sso_sp_base`.
+		//
+		// This is low-risk, as if the Destination validates against the `sso_sp_base`,
+		// it should be safe to also assume it as safe to be used on the current URL too.
+		$response = new SAML2Response( $saml->getSettings(), $_POST['SAMLResponse'] );
+		if ( $response->getXMLDocument()->documentElement->hasAttribute( 'Destination' ) ) {
+			$host = parse_url( $config['sp']['assertionConsumerService']['url'], PHP_URL_HOST );
+			$original_host = $_SERVER['HTTP_HOST'];
+			$_SERVER['HTTP_HOST'] = $host;
+
+		}
 		$saml->processResponse();
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
 		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+	} finally {
+		if ( isset( $original_host ) ) {
+			$_SERVER['HTTP_HOST'] = $original_host;
+		}
 	}
 
 	if ( ! empty( $saml->getErrors() ) ) {
@@ -331,6 +378,21 @@ function get_sso_user() {
 
 	if ( ! $saml->isAuthenticated() ) {
 		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
+	}
+
+	return $saml;
+}
+
+/**
+ * Handle authentication responses
+ *
+ * @return \WP_User|\WP_Error
+ */
+function get_sso_user() {
+	$saml = process_response();
+
+	if ( is_wp_error( $saml ) ) {
+		return $saml;
 	}
 
 	return get_or_create_wp_user( $saml );
@@ -513,9 +575,10 @@ function map_user_roles( $user, array $attributes ) {
 			$all_site_ids = new \WP_Site_Query( [
 				'network' => get_network()->id,
 				'fields'  => 'ids',
+				'number'  => 999,
 			] );
 
-			foreach ( $all_site_ids as $site_id ) {
+			foreach ( $all_site_ids->sites as $site_id ) {
 				switch_to_blog( $site_id );
 				$user->for_site( $site_id );
 				$user->set_role( reset( $roles['network'] ) );
@@ -552,7 +615,7 @@ function signon( $user ) {
 function cross_site_sso_redirect( $url ) {
 
 	$host          = wp_parse_url( $url, PHP_URL_HOST );
-	$allowed_hosts = explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) );
+	$allowed_hosts = array_map( 'trim', explode( ',', Admin\get_sso_settings( 'sso_whitelisted_hosts' ) ) );
 
 	/**
 	 * Filters the allowed hosts for cross-site SSO redirection
