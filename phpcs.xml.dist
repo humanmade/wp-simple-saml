@@ -35,6 +35,7 @@
 
 	<arg name="colors"/>
 
+	<exclude-pattern>/src/*</exclude-pattern>
 	<exclude-pattern>/vendor/*</exclude-pattern>
 	<exclude-pattern>/tests/*</exclude-pattern>
 </ruleset>

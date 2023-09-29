@@ -24,8 +24,7 @@ use Exception;
 /**
  * Configuration of the OneLogin PHP Toolkit
  */
-class Settings
-{
+class Settings {
     /**
      * List of paths.
      *
