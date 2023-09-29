@@ -24,7 +24,6 @@ commands:
           name: Deploy -built branch to github.
           command: |
             /bin/bash <(curl -s "https://raw.githubusercontent.com/Automattic/vip-go-build/master/deploy.sh")
-  i 
   build-base-composer:
       steps:
       - run:
