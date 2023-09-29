@@ -46,6 +46,7 @@ jobs:
     steps:
       - checkout
       - build-git-key
+
       - build-base-composer
       - run-liniting
       - persist_to_workspace:
@@ -63,6 +64,9 @@ jobs:
       - checkout
       - build-git-key
       - pre-built-branch
+      filters:
+        branches:
+          only: master
 workflows:
   build_deploy:
     jobs:
