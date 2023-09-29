@@ -1,72 +1,69 @@
 version: 2.1
-
-jobs: 
-  lint:
-    docker:
-      - image: cimg/php:8.0-browsers
+parameters:
+  image-tag:
+    type: string
+    default: "latest"
+commands:
+  build-git-key:
     steps:
-      - checkout
-      - run:
-          name: Install Composer
-          command: |
-            curl -s https://getcomposer.org/installer | php
-            mv composer.phar /usr/local/bin/composer
-      - run:
-          name: Install Composer dependencies
-          command: composer install -o -n
-      - run:
-          name: Lint PHP 
-          command: composer php:lint
-      - persist_to_workspace:
-          root: .
-          paths:
-            - vendor
-  build:
-    docker:
-      - image: cimg/php:8.0-browsers
-    steps:
-      - checkout
-      - run:
-          name: Install Composer
-          command: |
-            curl -s https://getcomposer.org/installer | php
-            mv composer.phar /usr/local/bin/composer
-      - run:
-          name: Install production dependencies
-          command: composer install --no-dev -o
-      - persist_to_workspace:
-          root: .
-          paths:
-            - vendor
-  sync:
-    docker:
-      - image: cimg/base:2020.01
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
       - add_ssh_keys:
           fingerprints:
-            - d5:11:d7:d9:19:34:5f:79:31:25:e2:0d:6f:6d:65:a7
-      - deploy:
-          name: Deploy -built branch to github
-          command: bash <(curl -s "https://raw.githubusercontent.com/Automattic/vip-go-build/master/deploy.sh")
-workflows:
-  test_build:
-    jobs:
-      - lint:
-          filters:
-            branches:
-              ignore: /.*-built/
-      - build:
-          requires:
-            - lint
-          filters:
-            branches:
-              only: master
-      - sync:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+            # CircleCI Fingerprint in newsuk repo
+            - 89:2c:a4:a5:72:21:45:a5:c0:f7:5f:d1:f9:01:8a:73ww
+  pre-built-branch:
+    steps:
+      # - run: 
+      #     name: Add google key manually
+      #     command: |
+      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4EB27DB2A3B88B8B
+      # - run:
+      #     name: Add google key manually
+      #     command: |
+      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4EB27DB2A3B88B8B
+      - run:
+          name: Deploy -built branch to github.
+          command: |
+            /bin/bash <(curl -s "https://raw.githubusercontent.com/Automattic/vip-go-build/master/deploy.sh")
+  i 
+  build-base-composer:
+      steps:
+      - run:
+          name: Install composer inside root directory
+          command: composer update --working-dir=./ -o -n
+  run-liniting:
+    steps:
+      - run:
+          name: Install composer inside theme
+          command: composer --working-dir=./ php:lint
+
+
+
+jobs:
+  build:
+    docker:
+      - image: circleci/php:7.3-node-browsers
+    environment:
+      IMAGETAG: << pipeline.parameters.image-tag >>
+    steps:
+      - checkout
+      - build-git-key
+      - build-base-composer
+      - run-liniting
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - ./
+  deploy:
+    docker:
+      - image: circleci/php:7.3-node-browsers
+    environment:
+      IMAGETAG: << pipeline.parameters.image-tag >>
+    steps:
+      - attach_workspace:
+          at: ./
+      - checkout
+      - build-git-key
+      - pre-built-branch
+      filters:
+        branches:
+          only: master
