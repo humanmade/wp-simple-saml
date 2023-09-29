@@ -45,7 +45,7 @@ class Settings
      *
      * @var bool
      */
-    private $_strict = true;
+    private $_strict = false;
 
     /**
      * Activate debug mode
