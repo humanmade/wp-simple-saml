@@ -64,9 +64,6 @@ jobs:
       - checkout
       - build-git-key
       - pre-built-branch
-      filters:
-        branches:
-          only: master
 workflows:
   build_deploy:
     jobs:
@@ -74,3 +71,6 @@ workflows:
       - deploy:
           requires:
             - build
+          filters:
+            branches:
+              only: master
