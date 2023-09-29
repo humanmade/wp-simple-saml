@@ -13,7 +13,7 @@ jobs:
             mv composer.phar /usr/local/bin/composer
       - run:
           name: Install Composer dependencies
-          command: composer install
+          command: composer install -o -n
       - run:
           name: Lint PHP 
           command: composer php:lint
