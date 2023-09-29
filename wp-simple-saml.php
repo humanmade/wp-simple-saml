@@ -1,31 +1,33 @@
-<?php
-/*
-Plugin Name: WP Simple SAML
-Description: Integrate SAML 2.0 IDP without the hassle
-Author: Shady Sharaf, Human Made
-Version: 0.1
-Author URI: http://hmn.md
-Text Domain: wp-simple-saml
-Domain Path: /language/
-
-Copyright 2017 Shady Sharaf, Human Made
-
-GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+<?php // phpcs:ignore
+/**
+ * Plugin Name: WP Simple SAML
+ * Description: Integrate SAML 2.0 IDP without the hassle
+ * Author: Shady Sharaf, Human Made
+ * Version: 0.1
+ * Author URI: http://hmn.md
+ * Text Domain: wp-simple-saml
+ * Domain Path: /language/
+ * 
+ * Copyright 2017 Shady Sharaf, Human Made
+ * 
+ * GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ * @package wp-simple-saml
+ */
 
 namespace HumanMade\SimpleSaml;
 
@@ -275,7 +277,7 @@ function settle( $user_id, array $attributes = [] ) {
  * @param WP_User $user
  */
 function signon( WP_User $user ) {
-	wp_set_auth_cookie( $user->ID, true, is_ssl() );
+	wp_set_auth_cookie( $user->ID, true, is_ssl() ); // phpcs:ignore
 }
 
 /**
@@ -304,9 +306,9 @@ function cross_site_sso_redirect( string $url ) {
 	</form>
 
 	<script>
-      setTimeout(function () {
+	setTimeout(function () {
         document.getElementById('sso_form').submit();
-      }, 100);
+	}, 100);
 	</script>
 
 	<?php

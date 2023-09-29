@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit96eecbf159723494627a17e6ee9bd757
 {
     public static $prefixLengthsPsr4 = array (
+        'V' => 
+        array (
+            'VariableAnalysis\\' => 17,
+        ),
         'R' => 
         array (
             'RobRichards\\XMLSecLibs\\' => 23,
@@ -15,9 +19,17 @@ class ComposerStaticInit96eecbf159723494627a17e6ee9bd757
         array (
             'OneLogin\\' => 9,
         ),
+        'D' => 
+        array (
+            'Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 55,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'VariableAnalysis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/sirbrillig/phpcs-variable-analysis/VariableAnalysis',
+        ),
         'RobRichards\\XMLSecLibs\\' => 
         array (
             0 => __DIR__ . '/..' . '/robrichards/xmlseclibs/src',
@@ -26,6 +38,10 @@ class ComposerStaticInit96eecbf159723494627a17e6ee9bd757
         array (
             0 => __DIR__ . '/../..' . '/src',
             1 => __DIR__ . '/..' . '/onelogin/php-saml/src',
+        ),
+        'Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dealerdirect/phpcodesniffer-composer-installer/src',
         ),
     );
 
