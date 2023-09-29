@@ -1,0 +1,24 @@
+# GLOBAL SETTINGS
+
+# By default, the version is set to "latest". This can be set to any version
+# from 0.4.2 and above, but you MUST include the full version number.
+# If you wish to increase the security releases automatically set the 
+# version to be 'X.Y', otherwise it will be 'X.Y.Z'.
+version: latest
+
+# PER-STANDARD SETTINGS
+phpcs:
+    # Set to false to disable phpcs
+    enabled: false
+
+    # Set to "inherit" to use the global version, "latest" for the latest
+    # version, or a specific full version number.
+    version: inherit
+
+eslint:
+    enabled: false
+    version: inherit
+
+stylelint:
+    enabled: false
+    version: inherit
