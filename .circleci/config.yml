@@ -14,9 +14,13 @@ jobs:
       - run:
           name: Install Composer dependencies
           command: composer install -o -n
-      # - run:
-      #     name: Lint PHP 
-      #     command: composer php:lint
+      - run:
+          name: Lint PHP 
+          command: composer php:lint
+      - persist_to_workspace:
+          root: .
+          paths:
+            - vendor
   build:
     docker:
       - image: cimg/php:8.0-browsers
