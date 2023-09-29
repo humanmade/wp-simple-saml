@@ -21,6 +21,6 @@
         }
     },
     "scripts": {
-        "php:lint": "./vendor/bin/phpcs ."
+        "php:lint": "php ./vendor/bin/phpcs ."
     }
 }
