@@ -1,0 +1,31 @@
+version: "3.7"
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    user: 1000:1000
+    env_file: .env
+    environment:
+      WORDPRESS_DB_HOST: ${DB_HOST}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
+    volumes:
+      - .:/usr/src
+      - ~/.composer:/var/cache/composer
+    links:
+      - mysql
+    depends_on:
+      - mysql
+  mysql:
+    platform: linux/x86_64
+    image: mysql:5.7
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - db:/var/lib/mysql
+volumes:
+  db:

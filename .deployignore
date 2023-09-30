@@ -1,0 +1,8 @@
+tests
+.gitignore
+composer.lock
+cypress.json
+phpcs.xml*
+phpunit.xml*
+docker
+docker-compose.yml.dist

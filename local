@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if [ ! -f ".env" ]; then
+    cp .env.dist .env
+fi
+
+if [ ! -f "docker-compose.yml" ]; then
+    cp docker-compose.yml.dist docker-compose.yml
+fi
+
+# if [ ! -f "phpunit.xml" ]; then
+#     cp phpunit.xml.dist phpunit.xml
+# fi
+
+docker-compose -p nuk-wp-simple-saml up -d mysql
+docker-compose -p nuk-wp-simple-saml run --entrypoint bash php

@@ -12,14 +12,14 @@
 	<rule ref="WordPress-VIP-Go">
 		<severity>5</severity>
 	</rule>
-
-	<rule ref="WordPress.WP.I18n">
+ 	<!-- <rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="nuk-wp-content-api"/>
+				<element value="wp-simple-saml"/>
 			</property>
 		</properties>
-	</rule>
+	</rule> -->
+
 
 	<!-- Temporarily disable some sniffs that conflict with PSR-4. -->
 	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
@@ -34,9 +34,8 @@
 	<arg value="sp"/>
 
 	<arg name="colors"/>
-
-	<exclude-pattern>/wp-simple-saml.php</exclude-pattern>
+ 
 	<exclude-pattern>/vendor/*</exclude-pattern>
 	<exclude-pattern>/tests/*</exclude-pattern>
-	<exclude-pattern>/src/*</exclude-pattern>
+ 
 </ruleset>
