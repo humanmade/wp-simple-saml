@@ -1,4 +1,4 @@
-FROM php:8.0
+FROM php:7.4
 
 # Container + PHP Setup
 RUN apt-get update && apt-get install -y \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     subversion
 
-RUN pecl install xdebug
+RUN pecl install xdebug-2.9.0
 RUN docker-php-ext-install mysqli
 RUN docker-php-ext-enable xdebug
 

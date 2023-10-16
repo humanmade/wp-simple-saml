@@ -9,17 +9,9 @@ commands:
       - add_ssh_keys:
           fingerprints:
             # CircleCI Fingerprint in newsuk repo
-            - 89:2c:a4:a5:72:21:45:a5:c0:f7:5f:d1:f9:01:8a:73ww
+            - 7b:53:48:82:e9:ff:45:44:36:b1:a7:31:65:a6:d6:a2
   pre-built-branch:
     steps:
-      # - run: 
-      #     name: Add google key manually
-      #     command: |
-      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4EB27DB2A3B88B8B
-      # - run:
-      #     name: Add google key manually
-      #     command: |
-      #       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4EB27DB2A3B88B8B
       - run:
           name: Deploy -built branch to github.
           command: |
@@ -34,13 +26,11 @@ commands:
       - run:
           name: Install composer inside theme
           command: composer --working-dir=./ php:lint
-
-
-
+ 
 jobs:
   build:
     docker:
-      - image: circleci/php:7.3-node-browsers
+      - image: circleci/php:7.4-node-browsers
     environment:
       IMAGETAG: << pipeline.parameters.image-tag >>
     steps:

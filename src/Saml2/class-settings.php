@@ -24,8 +24,8 @@ use Exception;
 /**
  * Configuration of the OneLogin PHP Toolkit
  */
-class Settings
-{
+class Settings {
+
 	/**
 	 * List of paths.
 	 *
@@ -34,7 +34,9 @@ class Settings
 	private $_paths = array();
 
 	/**
-	 * @var string
+	 * Baseurl of the site.
+	 * 
+	 * @var string 
 	 */
 	private $_baseurl;
 
@@ -109,39 +111,37 @@ class Settings
 	 *
 	 * @var bool
 	 */
-	private $_spValidationOnly = false;
+	private $_sp_validation_only = false;
 
 	/**
 	 * Initializes the settings:
 	 * - Sets the paths of the different folders
 	 * - Loads settings info from settings file or array/object provided
 	 *
-	 * @param array|null $settings         SAML Toolkit Settings
-	 * @param bool       $spValidationOnly Validate or not the IdP data
+	 * @param array|null $settings         SAML Toolkit Settings.
+	 * @param bool       $sp_validation_only Validate or not the IdP data.
 	 *
-	 * @throws Error If any settings parameter is invalid
-	 * @throws Exception If Settings is incorrectly supplied
+	 * @throws Error If any settings parameter is invalid.
 	 */
-	public function __construct(array $settings = null,bool $spValidationOnly = false)
-	{
-		$this->_spValidationOnly = $spValidationOnly;
+	public function __construct( array $settings = null, bool $sp_validation_only = false ) {
+		$this->_sp_validation_only = $sp_validation_only;
 		$this->_loadPaths();
 
-		if (!isset($settings)) {
-			if (!$this->_loadSettingsFromFile()) {
+		if ( ! isset( $settings ) ) {
+			if ( ! $this->_loadSettingsFromFile() ) {
 				throw new Error(
 					'Invalid file settings: %s',
 					Error::SETTINGS_INVALID,
-					array(implode(', ', $this->_errors))
+					array( implode( ', ', $this->_errors ) )
 				);
 			}
 			$this->_addDefaultValues();
 		} else {
-			if (!$this->_loadSettingsFromArray($settings)) {
+			if ( ! $this->_loadSettingsFromArray( $settings ) ) {
 				throw new Error(
 					'Invalid array settings: %s',
 					Error::SETTINGS_INVALID,
-					array(implode(', ', $this->_errors))
+					array( implode( ', ', $this->_errors ) )
 				);
 			}
 		}
@@ -158,19 +158,18 @@ class Settings
 	 *
 	 * @suppress PhanUndeclaredConstant
 	 */
-	private function _loadPaths()
-	{
-		$basePath = dirname(dirname(__DIR__)) . '/';
+	private function _loadPaths() {
+        $base_path    = dirname( dirname( __DIR__ ) ) . '/';
 		$this->_paths = array(
-		'base' => $basePath,
-		'config' => $basePath,
-		'cert' => $basePath.'certs/',
-		'lib' => __DIR__ . '/',
+			'base'   => $base_path,
+			'config' => $base_path,
+			'cert'   => $base_path . 'certs/',
+			'lib'    => __DIR__ . '/',
 		);
 
-		if (defined('ONELOGIN_CUSTOMPATH')) {
+		if ( defined( 'ONELOGIN_CUSTOMPATH' ) ) {
 			$this->_paths['config'] = ONELOGIN_CUSTOMPATH;
-			$this->_paths['cert'] = ONELOGIN_CUSTOMPATH . 'certs/';
+			$this->_paths['cert']   = ONELOGIN_CUSTOMPATH . 'certs/';
 		}
 	}
 
@@ -179,18 +178,16 @@ class Settings
 	 *
 	 * @return string  The base toolkit folder path
 	 */
-	public function getBasePath()
-	{
+	public function getBasePath() {
 		return $this->_paths['base'];
 	}
-
+	
 	/**
 	 * Returns cert path.
 	 *
 	 * @return string The cert folder path
 	 */
-	public function getCertPath()
-	{
+	public function getCertPath() {
 		return $this->_paths['cert'];
 	}
 
@@ -199,8 +196,7 @@ class Settings
 	 *
 	 * @return string The config folder path
 	 */
-	public function getConfigPath()
-	{
+	public function getConfigPath(): string {
 		return $this->_paths['config'];
 	}
 
@@ -209,8 +205,7 @@ class Settings
 	 *
 	 * @return string The library folder path
 	 */
-	public function getLibPath()
-	{
+	public function getLibPath(): string {
 		return $this->_paths['lib'];
 	}
 
@@ -219,9 +214,8 @@ class Settings
 	 *
 	 * @return string  The external library folder path
 	 */
-	public function getSchemasPath()
-	{
-		if (isset($this->_paths['schemas'])) {
+	public function getSchemasPath(): string {
+		if ( isset( $this->_paths['schemas'] ) ) {
 			return $this->_paths['schemas'];
 		}
 		return __DIR__ . '/schemas/';
@@ -230,58 +224,56 @@ class Settings
 	/**
 	 * Set schemas path
 	 *
-	 * @param  string $path
-	 * @return $this
+	 * @param  string $path path of Schemas.
+	 * @return void 
 	 */
-	public function setSchemasPath($path)
-	{
+	public function setSchemasPath( $path ): void {
 		$this->_paths['schemas'] = $path;
 	}
 
 	/**
-	 * Loads settings info from a settings Array
+	 * Loads settings info from a settings Array.
 	 *
-	 * @param array $settings SAML Toolkit Settings
+	 * @param array $settings SAML Toolkit Settings.
 	 *
-	 * @return bool True if the settings info is valid
+	 * @return bool True if the settings info is valid.
 	 */
-	private function _loadSettingsFromArray(array $settings)
-	{
-		if (isset($settings['sp'])) {
+	private function _loadSettingsFromArray( array $settings ) {
+		if ( isset( $settings['sp'] ) ) {
 			$this->_sp = $settings['sp'];
 		}
-		if (isset($settings['idp'])) {
+		if ( isset( $settings['idp'] ) ) {
 			$this->_idp = $settings['idp'];
 		}
 
-		$errors = $this->checkSettings($settings);
-		if (empty($errors)) {
+		$errors = $this->checkSettings( $settings );
+		if ( empty( $errors ) ) {
 			$this->_errors = array();
 
-			if (isset($settings['strict'])) {
+			if ( isset( $settings['strict'] ) ) {
 				$this->_strict = $settings['strict'];
 			}
-			if (isset($settings['debug'])) {
+			if ( isset( $settings['debug'] ) ) {
 				$this->_debug = $settings['debug'];
 			}
 
-			if (isset($settings['baseurl'])) {
+			if ( isset( $settings['baseurl'] ) ) {
 				$this->_baseurl = $settings['baseurl'];
 			}
 
-			if (isset($settings['compress'])) {
+			if ( isset( $settings['compress'] ) ) {
 				$this->_compress = $settings['compress'];
 			}
 
-			if (isset($settings['security'])) {
+			if ( isset( $settings['security'] ) ) {
 				$this->_security = $settings['security'];
 			}
 
-			if (isset($settings['contactPerson'])) {
+			if ( isset( $settings['contactPerson'] ) ) {
 				$this->_contacts = $settings['contactPerson'];
 			}
 
-			if (isset($settings['organization'])) {
+			if ( isset( $settings['organization'] ) ) {
 				$this->_organization = $settings['organization'];
 			}
 
@@ -294,171 +286,163 @@ class Settings
 	}
 
 	/**
-	 * Loads settings info from the settings file
+	 * Loads settings info from the settings file.
 	 *
-	 * @return bool True if the settings info is valid
+	 * @return bool True if the settings info is valid.
 	 *
-	 * @throws Error
+	 * @throws Error File doesn't exist.
 	 *
-	 * @suppress PhanUndeclaredVariable
+	 * @suppress PhanUndeclaredVariable.
 	 */
-	private function _loadSettingsFromFile()
-	{
-		$filename = $this->getConfigPath().'settings.php';
+	private function _loadSettingsFromFile() {
+		$filename = $this->getConfigPath() . 'settings.php';
 
-		if (!file_exists($filename)) {
+		if ( ! file_exists( $filename ) ) {
 			throw new Error(
 				'Settings file not found: %s',
 				Error::SETTINGS_FILE_NOT_FOUND,
-				array($filename)
+				array( $filename )
 			);
 		}
 
-		/**
- * @var array $settings 
-*/
 		include $filename;
 
-		// Add advance_settings if exists
-		$advancedFilename = $this->getConfigPath().'advanced_settings.php';
+		// Add advance_settings if exists.
+		$advanced_filename = $this->getConfigPath() . 'advanced_settings.php';
 
-		if (file_exists($advancedFilename)) {
-			/**
- * @var array $advancedSettings 
-*/
-			include $advancedFilename;
-			$settings = array_merge($settings, $advancedSettings);
+		if ( file_exists( $advanced_filename ) ) {
+			include $advanced_filename;
+			$settings = array_merge( $settings, $advanced_settings );
 		}
 
 
-		return $this->_loadSettingsFromArray($settings);
+		return $this->_loadSettingsFromArray( $settings );
 	}
 
 		/**
-		 * Add default values if the settings info is not complete
+		 * Add default values if the settings info is not complete.
 		 */
-	private function _addDefaultValues()
-	{
-		if (!isset($this->_sp['assertionConsumerService']['binding'])) {
+	private function _addDefaultValues() {
+		if ( ! isset( $this->_sp['assertionConsumerService']['binding'] ) ) {
 			$this->_sp['assertionConsumerService']['binding'] = Constants::BINDING_HTTP_POST;
 		}
-		if (isset($this->_sp['singleLogoutService']) && !isset($this->_sp['singleLogoutService']['binding'])) {
+		if ( isset( $this->_sp['singleLogoutService'] ) && ! isset( $this->_sp['singleLogoutService']['binding'] ) ) {
 			$this->_sp['singleLogoutService']['binding'] = Constants::BINDING_HTTP_REDIRECT;
 		}
 
-		if (!isset($this->_compress['requests'])) {
+		if ( ! isset( $this->_compress['requests'] ) ) {
 			$this->_compress['requests'] = true;
 		}
 
-		if (!isset($this->_compress['responses'])) {
+		if ( ! isset( $this->_compress['responses'] ) ) {
 			$this->_compress['responses'] = true;
 		}
 
-		// Related to nameID
-		if (!isset($this->_sp['NameIDFormat'])) {
+		// Related to nameID.
+		if ( ! isset( $this->_sp['NameIDFormat'] ) ) {
 			$this->_sp['NameIDFormat'] = Constants::NAMEID_UNSPECIFIED;
 		}
-		if (!isset($this->_security['nameIdEncrypted'])) {
+		if ( ! isset( $this->_security['nameIdEncrypted'] ) ) {
 			$this->_security['nameIdEncrypted'] = false;
 		}
-		if (!isset($this->_security['requestedAuthnContext'])) {
+		if ( ! isset( $this->_security['requestedAuthnContext'] ) ) {
 			$this->_security['requestedAuthnContext'] = true;
 		}
 
-		// sign provided
-		if (!isset($this->_security['authnRequestsSigned'])) {
+		// sign provided.
+		if ( ! isset( $this->_security['authnRequestsSigned'] ) ) {
 			$this->_security['authnRequestsSigned'] = false;
 		}
-		if (!isset($this->_security['logoutRequestSigned'])) {
+		if ( ! isset( $this->_security['logoutRequestSigned'] ) ) {
 			$this->_security['logoutRequestSigned'] = false;
 		}
-		if (!isset($this->_security['logoutResponseSigned'])) {
+		if ( ! isset( $this->_security['logoutResponseSigned'] ) ) {
 			$this->_security['logoutResponseSigned'] = false;
 		}
-		if (!isset($this->_security['signMetadata'])) {
+		if ( ! isset( $this->_security['signMetadata'] ) ) {
 			$this->_security['signMetadata'] = false;
 		}
 
-		// sign expected
-		if (!isset($this->_security['wantMessagesSigned'])) {
+		// sign expected.
+		if ( ! isset( $this->_security['wantMessagesSigned'] ) ) {
 			$this->_security['wantMessagesSigned'] = false;
 		}
-		if (!isset($this->_security['wantAssertionsSigned'])) {
+		if ( ! isset( $this->_security['wantAssertionsSigned'] ) ) {
 			$this->_security['wantAssertionsSigned'] = false;
 		}
 
-		// NameID element expected
-		if (!isset($this->_security['wantNameId'])) {
+		// NameID element expected.
+		if ( ! isset( $this->_security['wantNameId'] ) ) {
 			$this->_security['wantNameId'] = true;
 		}
 
-		// Relax Destination validation
-		if (!isset($this->_security['relaxDestinationValidation'])) {
+		// Relax Destination validation.
+		if ( ! isset( $this->_security['relaxDestinationValidation'] ) ) {
 			$this->_security['relaxDestinationValidation'] = false;
 		}
 
-		// Strict Destination match validation
-		if (!isset($this->_security['destinationStrictlyMatches'])) {
+		// Strict Destination match validation.
+		if ( ! isset( $this->_security['destinationStrictlyMatches'] ) ) {
 			$this->_security['destinationStrictlyMatches'] = false;
 		}
 
-		// Allow duplicated Attribute Names
-		if (!isset($this->_security['allowRepeatAttributeName'])) {
+		// Allow duplicated Attribute Names.
+		if ( ! isset( $this->_security['allowRepeatAttributeName'] ) ) {
 			$this->_security['allowRepeatAttributeName'] = false;
 		}
 
-		// InResponseTo
-		if (!isset($this->_security['rejectUnsolicitedResponsesWithInResponseTo'])) {
+		// InResponseTo.
+		if ( ! isset( $this->_security['rejectUnsolicitedResponsesWithInResponseTo'] ) ) {
 			$this->_security['rejectUnsolicitedResponsesWithInResponseTo'] = false;
 		}
 
-		// encrypt expected
-		if (!isset($this->_security['wantAssertionsEncrypted'])) {
+		// encrypt expected.
+		if ( ! isset( $this->_security['wantAssertionsEncrypted'] ) ) {
 			$this->_security['wantAssertionsEncrypted'] = false;
 		}
-		if (!isset($this->_security['wantNameIdEncrypted'])) {
+		if ( ! isset( $this->_security['wantNameIdEncrypted'] ) ) {
 			$this->_security['wantNameIdEncrypted'] = false;
 		}
 
-		// XML validation
-		if (!isset($this->_security['wantXMLValidation'])) {
+		// XML validation.
+		if ( ! isset( $this->_security['wantXMLValidation'] ) ) {
 			$this->_security['wantXMLValidation'] = true;
 		}
 
-		// SignatureAlgorithm
-		if (!isset($this->_security['signatureAlgorithm'])) {
-			$this->_security['signatureAlgorithm'] = XMLSecurityKey::RSA_SHA256;
+		// SignatureAlgorithm.
+		if ( ! isset( $this->_security['signature_algorithm'] ) ) {
+			$this->_security['signature_algorithm'] = XMLSecurityKey::RSA_SHA256;
 		}
 
-		// DigestAlgorithm
-		if (!isset($this->_security['digestAlgorithm'])) {
-			$this->_security['digestAlgorithm'] = XMLSecurityDSig::SHA256;
+		// DigestAlgorithm.
+		if ( ! isset( $this->_security['digest_algorithm'] ) ) {
+			$this->_security['digest_algorithm'] = XMLSecurityDSig::SHA256;
 		}
 
-		// EncryptionAlgorithm
-		if (!isset($this->_security['encryption_algorithm'])) {
+		// EncryptionAlgorithm.
+		if ( ! isset( $this->_security['encryption_algorithm'] ) ) {
 			$this->_security['encryption_algorithm'] = XMLSecurityKey::AES128_CBC;
 		}
 
-		if (!isset($this->_security['lowercaseUrlencoding'])) {
+		if ( ! isset( $this->_security['lowercaseUrlencoding'] ) ) {
 			$this->_security['lowercaseUrlencoding'] = false;
 		}
 
-		// Certificates / Private key /Fingerprint
-		if (!isset($this->_idp['x509cert'])) {
+		// Certificates / Private key /Fingerprint.
+		if ( ! isset( $this->_idp['x509cert'] ) ) {
 			$this->_idp['x509cert'] = '';
 		}
-		if (!isset($this->_idp['certFingerprint'])) {
+		if ( ! isset( $this->_idp['certFingerprint'] ) ) {
 			$this->_idp['certFingerprint'] = '';
 		}
-		if (!isset($this->_idp['certFingerprintAlgorithm'])) {
+		if ( ! isset( $this->_idp['certFingerprintAlgorithm'] ) ) {
 			$this->_idp['certFingerprintAlgorithm'] = 'sha1';
 		}
 
-		if (!isset($this->_sp['x509cert'])) {
+		if ( ! isset( $this->_sp['x509cert'] ) ) {
 			$this->_sp['x509cert'] = '';
 		}
-		if (!isset($this->_sp['privateKey'])) {
+		if ( ! isset( $this->_sp['privateKey'] ) ) {
 			$this->_sp['privateKey'] = '';
 		}
 	}
@@ -466,25 +450,24 @@ class Settings
 	/**
 	 * Checks the settings info.
 	 *
-	 * @param array $settings Array with settings data
+	 * @param array $settings Array with settings data.
 	 *
-	 * @return array $errors  Errors found on the settings data
+	 * @return array $errors  Errors found on the settings data.
 	 */
-	public function checkSettings(array $settings)
-	{
-		if (empty($settings)) {
-			$errors = array('invalid_syntax');
+	public function checkSettings( array $settings ) {
+		if ( empty( $settings ) ) {
+			$errors = array( 'invalid_syntax' );
 		} else {
 			$errors = array();
-			if (!$this->_spValidationOnly) {
-				$idpErrors = $this->checkIdPSettings($settings);
-				$errors = array_merge($idpErrors, $errors);
+			if ( ! $this->_sp_validation_only ) {
+				$idp_errors = $this->checkIdPSettings( $settings );
+				$errors     = array_merge( $idp_errors, $errors );
 			}
-			$spErrors = $this->checkSPSettings($settings);
-			$errors = array_merge($spErrors, $errors);
+			$sp_errors = $this->checkSPSettings( $settings );
+			$errors    = array_merge( $sp_errors, $errors );
 
-			$compressErrors = $this->checkCompressionSettings($settings);
-			$errors = array_merge($compressErrors, $errors);
+			$compress_errors = $this->checkCompressionSettings( $settings );
+			$errors          = array_merge( $compress_errors, $errors );
 		}
 
 		return $errors;
@@ -493,25 +476,24 @@ class Settings
 	/**
 	 * Checks the compression settings info.
 	 *
-	 * @param array $settings Array with settings data
+	 * @param array $settings Array with settings data.
 	 *
-	 * @return array $errors  Errors found on the settings data
+	 * @return array $errors  Errors found on the settings data.
 	 */
-	public function checkCompressionSettings($settings)
-	{
+	public function checkCompressionSettings( $settings ) {
 		$errors = array();
 
-		if (isset($settings['compress'])) {
-			if (!is_array($settings['compress'])) {
-				$errors[] = "invalid_syntax";
-			} else if (isset($settings['compress']['requests'])
-				&& $settings['compress']['requests'] !== true
-				&& $settings['compress']['requests'] !== false
+		if ( isset( $settings['compress'] ) ) {
+			if ( ! is_array( $settings['compress'] ) ) {
+				$errors[] = 'invalid_syntax';
+			} elseif ( isset( $settings['compress']['requests'] )
+				&& true !== $settings['compress']['requests'] 
+				&& false !== $settings['compress']['requests'] 
 			) {
 				$errors[] = "'compress'=>'requests' values must be true or false.";
-			} else if (isset($settings['compress']['responses'])
-				&& $settings['compress']['responses'] !== true
-				&& $settings['compress']['responses'] !== false
+			} elseif ( isset( $settings['compress']['responses'] )
+				&& true !== $$settings['compress']['responses'] 
+				&& false !== $$settings['compress']['responses'] 
 			) {
 				$errors[] = "'compress'=>'responses' values must be true or false.";
 			}
@@ -522,65 +504,61 @@ class Settings
 	/**
 	 * Checks the IdP settings info.
 	 *
-	 * @param array $settings Array with settings data
+	 * @param array $settings Array with settings data.
 	 *
-	 * @return array $errors  Errors found on the IdP settings data
+	 * @return array $errors  Errors found on the IdP settings data.
 	 */
-	public function checkIdPSettings(array $settings)
-	{
-		if (empty($settings)) {
-			return array('invalid_syntax');
+	public function checkIdPSettings( array $settings ) {
+		if ( empty( $settings ) ) {
+			return array( 'invalid_syntax' );
 		}
 
 		$errors = array();
 
-		if (!isset($settings['idp']) || empty($settings['idp'])) {
+		if ( ! isset( $settings['idp'] ) || empty( $settings['idp'] ) ) {
 			$errors[] = 'idp_not_found';
 		} else {
 			$idp = $settings['idp'];
-			if (!isset($idp['entityId']) || empty($idp['entityId'])) {
+			if ( ! isset( $idp['entityId'] ) || empty( $idp['entityId'] ) ) {
 				$errors[] = 'idp_entityId_not_found';
 			}
 
-			if (!isset($idp['singleSignOnService'])
-				|| !isset($idp['singleSignOnService']['url'])
-				|| empty($idp['singleSignOnService']['url'])
+			if ( ! isset( $idp['singleSignOnService'] )
+				|| ! isset( $idp['singleSignOnService']['url'] )
+				|| empty( $idp['singleSignOnService']['url'] )
 			) {
 				$errors[] = 'idp_sso_not_found';
-			} else if (!filter_var($idp['singleSignOnService']['url'], FILTER_VALIDATE_URL)) {
+			} elseif ( ! filter_var( $idp['singleSignOnService']['url'], FILTER_VALIDATE_URL ) ) {
 				$errors[] = 'idp_sso_url_invalid';
 			}
 
-			if (isset($idp['singleLogoutService'])
-				&& isset($idp['singleLogoutService']['url'])
-				&& !empty($idp['singleLogoutService']['url'])
-				&& !filter_var($idp['singleLogoutService']['url'], FILTER_VALIDATE_URL)
+			if ( isset( $idp['singleLogoutService'] )
+				&& isset( $idp['singleLogoutService']['url'] )
+				&& ! empty( $idp['singleLogoutService']['url'] )
+				&& ! filter_var( $idp['singleLogoutService']['url'], FILTER_VALIDATE_URL )
 			) {
 				$errors[] = 'idp_slo_url_invalid';
 			}
 
-			if (isset($idp['singleLogoutService'])
-				&& isset($idp['singleLogoutService']['responseUrl'])
-				&& !empty($idp['singleLogoutService']['responseUrl'])
-				&& !filter_var($idp['singleLogoutService']['responseUrl'], FILTER_VALIDATE_URL)
+			if ( isset( $idp['singleLogoutService'] )
+				&& isset( $idp['singleLogoutService']['responseUrl'] )
+				&& ! empty( $idp['singleLogoutService']['responseUrl'] )
+				&& ! filter_var( $idp['singleLogoutService']['responseUrl'], FILTER_VALIDATE_URL )
 			) {
 				$errors[] = 'idp_slo_response_url_invalid';
 			}
 
-			$existsX509 = isset($idp['x509cert']) && !empty($idp['x509cert']);
-			$existsMultiX509Sign = isset($idp['x509certMulti']) && isset($idp['x509certMulti']['signing']) && !empty($idp['x509certMulti']['signing']);
-			$existsFingerprint = isset($idp['certFingerprint']) && !empty($idp['certFingerprint']);
-			if (!($existsX509 || $existsFingerprint || $existsMultiX509Sign)
-			) {
+			$exists_x509            = isset( $idp['x509cert'] ) && ! empty( $idp['x509cert'] );
+			$exists_multi_x509_sign = isset( $idp['x509certMulti'] ) && isset( $idp['x509certMulti']['signing'] ) && ! empty( $idp['x509certMulti']['signing'] );
+			$exists_fingerprint     = isset( $idp['certFingerprint'] ) && ! empty( $idp['certFingerprint'] );
+			if ( ! ( $exists_x509 || $exists_fingerprint || $exists_multi_x509_sign ) ) {
 				$errors[] = 'idp_cert_or_fingerprint_not_found_and_required';
 			}
 
-			if (isset($settings['security'])) {
-				$existsMultiX509Enc = isset($idp['x509certMulti']) && isset($idp['x509certMulti']['encryption']) && !empty($idp['x509certMulti']['encryption']);
+			if ( isset( $settings['security'] ) ) {
+				$exists_multi_x509_enc = isset( $idp['x509certMulti'] ) && isset( $idp['x509certMulti']['encryption'] ) && ! empty( $idp['x509certMulti']['encryption'] );
 
-				if ((isset($settings['security']['nameIdEncrypted']) && $settings['security']['nameIdEncrypted'] == true)
-					&& !($existsX509 || $existsMultiX509Enc)
-				) {
+				if ( true == ( isset( $settings['security']['nameIdEncrypted'] ) && $settings['security']['nameIdEncrypted'] && ! ( $exists_x509 || $exists_multi_x509_enc ) ) ) {
 					$errors[] = 'idp_cert_not_found_and_required';
 				}
 			}
@@ -592,81 +570,80 @@ class Settings
 	/**
 	 * Checks the SP settings info.
 	 *
-	 * @param array $settings Array with settings data
+	 * @param array $settings Array with settings data.
 	 *
-	 * @return array $errors  Errors found on the SP settings data
+	 * @return array $errors  Errors found on the SP settings data.
 	 */
-	public function checkSPSettings(array $settings)
-	{
-		if (empty($settings)) {
-			return array('invalid_syntax');
+	public function checkSPSettings( array $settings ) {
+		if ( empty( $settings ) ) {
+			return array( 'invalid_syntax' );
 		}
 
 		$errors = array();
 
-		if (!isset($settings['sp']) || empty($settings['sp'])) {
+		if ( ! isset( $settings['sp'] ) || empty( $settings['sp'] ) ) {
 			$errors[] = 'sp_not_found';
 		} else {
-			$sp = $settings['sp'];
+			$sp       = $settings['sp'];
 			$security = array();
-			if (isset($settings['security'])) {
+			if ( isset( $settings['security'] ) ) {
 				$security = $settings['security'];
 			}
 
-			if (!isset($sp['entityId']) || empty($sp['entityId'])) {
+			if ( ! isset( $sp['entityId'] ) || empty( $sp['entityId'] ) ) {
 				$errors[] = 'sp_entityId_not_found';
 			}
 
-			if (!isset($sp['assertionConsumerService'])
-				|| !isset($sp['assertionConsumerService']['url'])
-				|| empty($sp['assertionConsumerService']['url'])
+			if ( ! isset( $sp['assertionConsumerService'] )
+				|| ! isset( $sp['assertionConsumerService']['url'] )
+				|| empty( $sp['assertionConsumerService']['url'] )
 			) {
 				$errors[] = 'sp_acs_not_found';
-			} else if (!filter_var($sp['assertionConsumerService']['url'], FILTER_VALIDATE_URL)) {
+			} elseif ( ! filter_var( $sp['assertionConsumerService']['url'], FILTER_VALIDATE_URL ) ) {
 				$errors[] = 'sp_acs_url_invalid';
 			}
 
-			if (isset($sp['singleLogoutService'])
-				&& isset($sp['singleLogoutService']['url'])
-				&& !filter_var($sp['singleLogoutService']['url'], FILTER_VALIDATE_URL)
+			if ( isset( $sp['singleLogoutService'] )
+				&& isset( $sp['singleLogoutService']['url'] )
+				&& ! filter_var( $sp['singleLogoutService']['url'], FILTER_VALIDATE_URL )
 			) {
 				$errors[] = 'sp_sls_url_invalid';
 			}
 
-			if (isset($security['signMetadata']) && is_array($security['signMetadata'])) {
-				if ((!isset($security['signMetadata']['keyFileName'])
-					|| !isset($security['signMetadata']['certFileName'])) 
-					&& (!isset($security['signMetadata']['privateKey'])
-					|| !isset($security['signMetadata']['x509cert']))
+			if ( isset( $security['signMetadata'] ) && is_array( $security['signMetadata'] ) ) {
+				if ( ( ! isset( $security['signMetadata']['key_file_name'] )
+					|| ! isset( $security['signMetadata']['cert_file_name'] ) ) 
+					&& ( ! isset( $security['signMetadata']['privateKey'] )
+					|| ! isset( $security['signMetadata']['x509cert'] ) )
 				) {
 					$errors[] = 'sp_signMetadata_invalid';
 				}
 			}
 
-			if (((isset($security['authnRequestsSigned']) && $security['authnRequestsSigned'] == true)
-				|| (isset($security['logoutRequestSigned']) && $security['logoutRequestSigned'] == true)
-				|| (isset($security['logoutResponseSigned']) && $security['logoutResponseSigned'] == true)
-				|| (isset($security['wantAssertionsEncrypted']) && $security['wantAssertionsEncrypted'] == true)
-				|| (isset($security['wantNameIdEncrypted']) && $security['wantNameIdEncrypted'] == true))
-				&& !$this->checkSPCerts()
+			if ( ( ( true == isset( $security['authnRequestsSigned'] ) && $security['authnRequestsSigned'] )
+				|| ( true == isset( $security['logoutRequestSigned'] ) && $security['logoutRequestSigned'] )
+				|| ( true == isset( $security['logoutResponseSigned'] ) && $security['logoutResponseSigned'] )
+				|| ( true == isset( $security['wantAssertionsEncrypted'] ) && $security['wantAssertionsEncrypted'] )
+				|| ( true == isset( $security['wantNameIdEncrypted'] ) && $security['wantNameIdEncrypted'] ) )
+				&& ! $this->checkSPCerts()
 			) {
 				$errors[] = 'sp_certs_not_found_and_required';
 			}
 		}
 
-		if (isset($settings['contactPerson'])) {
-			$types = array_keys($settings['contactPerson']);
-			$validTypes = array('technical', 'support', 'administrative', 'billing', 'other');
-			foreach ($types as $type) {
-				if (!in_array($type, $validTypes)) {
+		if ( isset( $settings['contactPerson'] ) ) {
+			$types       = array_keys( $settings['contactPerson'] );
+			$valid_types = array( 'technical', 'support', 'administrative', 'billing', 'other' );
+			foreach ( $types as $type ) {
+				if ( ! in_array( $type, $valid_types ) ) {
 					$errors[] = 'contact_type_invalid';
 					break;
 				}
 			}
 
-			foreach ($settings['contactPerson'] as $type => $contact) {
-				if (!isset($contact['givenName']) || empty($contact['givenName'])
-					|| !isset($contact['emailAddress']) || empty($contact['emailAddress'])
+			foreach ( $settings['contactPerson'] as $type => $contact ) {
+				if ( ! isset( $contact['givenName'] ) || empty( $contact['givenName'] )
+					|| ! isset( $contact['emailAddress'] ) || empty( $contact['emailAddress'] )
 				) {
 					$errors[] = 'contact_not_enought_data';
 					break;
@@ -674,11 +651,11 @@ class Settings
 			}
 		}
 
-		if (isset($settings['organization'])) {
-			foreach ($settings['organization'] as $organization) {
-				if (!isset($organization['name']) || empty($organization['name'])
-					|| !isset($organization['displayname']) || empty($organization['displayname'])
-					|| !isset($organization['url']) || empty($organization['url'])
+		if ( isset( $settings['organization'] ) ) {
+			foreach ( $settings['organization'] as $organization ) {
+				if ( ! isset( $organization['name'] ) || empty( $organization['name'] )
+					|| ! isset( $organization['displayname'] ) || empty( $organization['displayname'] )
+					|| ! isset( $organization['url'] ) || empty( $organization['url'] )
 				) {
 					$errors[] = 'organization_not_enought_data';
 					break;
@@ -694,28 +671,26 @@ class Settings
 	 *
 	 * @return bool
 	 */
-	public function checkSPCerts()
-	{
-		$key = $this->getSPkey();
+	public function checkSPCerts() {
+        $key  = $this->getSPkey();
 		$cert = $this->getSPcert();
-		return (!empty($key) && !empty($cert));
+		return ( ! empty( $key ) && ! empty( $cert ) );
 	}
 
 	/**
 	 * Returns the x509 private key of the SP.
 	 *
-	 * @return string SP private key
+	 * @return string SP private key.
 	 */
-	public function getSPkey()
-	{
-		$key = null;
-		if (isset($this->_sp['privateKey']) && !empty($this->_sp['privateKey'])) {
+	public function getSPkey() {
+        $key = null;
+		if ( isset( $this->_sp['privateKey'] ) && ! empty( $this->_sp['privateKey'] ) ) {
 			$key = $this->_sp['privateKey'];
 		} else {
-			$keyFile = $this->_paths['cert'].'sp.key';
+			$key_file = $this->_paths['cert'] . 'sp.key';
 
-			if (file_exists($keyFile)) {
-				$key = file_get_contents($keyFile);
+			if ( file_exists( $key_file ) ) {
+				$key = wpcom_vip_file_get_contents( $key_file );
 			}
 		}
 		return $key;
@@ -726,40 +701,38 @@ class Settings
 	 *
 	 * @return string SP public cert
 	 */
-	public function getSPcert()
-	{
+	public function getSPcert() {
 		$cert = null;
 
-		if (isset($this->_sp['x509cert']) && !empty($this->_sp['x509cert'])) {
+		if ( isset( $this->_sp['x509cert'] ) && ! empty( $this->_sp['x509cert'] ) ) {
 			$cert = $this->_sp['x509cert'];
 		} else {
-			$certFile = $this->_paths['cert'].'sp.crt';
+			$cert_file = $this->_paths['cert'] . 'sp.crt';
 
-			if (file_exists($certFile)) {
-				$cert = file_get_contents($certFile);
+			if ( file_exists( $cert_file ) ) {
+				$cert = wpcom_vip_file_get_contents( $cert_file );
 			}
 		}
 		return $cert;
 	}
 
 	/**
-	 * Returns the x509 public of the SP that is
-	 * planed to be used soon instead the other
-	 * public cert
+	 * Returns the x509 public of the SP that is.
+	 * planed to be used soon instead the other.
+	 * public cert.
 	 *
-	 * @return string SP public cert New
+	 * @return string SP public cert New.
 	 */
-	public function getSPcertNew()
-	{
-		$cert = null;
+	public function getSPcertNew() {
+        $cert = null;
 
-		if (isset($this->_sp['x509certNew']) && !empty($this->_sp['x509certNew'])) {
-			$cert = $this->_sp['x509certNew'];
+		if ( isset( $this->_sp['x509cert_new'] ) && ! empty( $this->_sp['x509cert_new'] ) ) {
+			$cert = $this->_sp['x509cert_new'];
 		} else {
-			$certFile = $this->_paths['cert'].'sp_new.crt';
+			$cert_file = $this->_paths['cert'] . 'sp_new.crt';
 
-			if (file_exists($certFile)) {
-				$cert = file_get_contents($certFile);
+			if ( file_exists( $cert_file ) ) {
+				$cert = wpcom_vip_file_get_contents( $cert_file );
 			}
 		}
 		return $cert;
@@ -768,109 +741,99 @@ class Settings
 	/**
 	 * Gets the IdP data.
 	 *
-	 * @return array  IdP info
+	 * @return array  IdP info.
 	 */
-	public function getIdPData()
-	{
+	public function getIdPData() {
 		return $this->_idp;
 	}
 
 	/**
 	 * Gets the SP data.
 	 *
-	 * @return array  SP info
+	 * @return array  SP info.
 	 */
-	public function getSPData()
-	{
+	public function getSPData() {
 		return $this->_sp;
 	}
 
 	/**
 	 * Gets security data.
 	 *
-	 * @return array  SP info
+	 * @return array  SP info.
 	 */
-	public function getSecurityData()
-	{
-		return $this->_security;
+	public function getSecurityData() {
+        return $this->_security;
 	}
 
 	/**
 	 * Gets contact data.
 	 *
-	 * @return array  SP info
+	 * @return array  SP info.
 	 */
-	public function getContacts()
-	{
-		return $this->_contacts;
+	public function getContacts() {
+        return $this->_contacts;
 	}
 
 	/**
 	 * Gets organization data.
 	 *
-	 * @return array  SP info
+	 * @return array  SP info.
 	 */
-	public function getOrganization()
-	{
-		return $this->_organization;
+	public function getOrganization() {
+        return $this->_organization;
 	}
 
 	/**
-	 * Should SAML requests be compressed?
+	 * Should SAML requests be compressed?.
 	 *
-	 * @return bool Yes/No as True/False
+	 * @return bool Yes/No as True/False.
 	 */
-	public function shouldCompressRequests()
-	{
+	public function shouldCompressRequests() {
 		return $this->_compress['requests'];
 	}
 
 	/**
-	 * Should SAML responses be compressed?
+	 * Should SAML responses be compressed?.
 	 *
-	 * @return bool Yes/No as True/False
+	 * @return bool Yes/No as True/False.
 	 */
-	public function shouldCompressResponses()
-	{
-		return $this->_compress['responses'];
+	public function shouldCompressResponses() {
+        return $this->_compress['responses'];
 	}
 
 	/**
 	 * Gets the IdP SSO url.
 	 *
-	 * @return string|null The url of the IdP Single Sign On Service
+	 * @return string|null The url of the IdP Single Sign On Service.
 	 */
-	public function getIdPSSOUrl()
-	{
-		$ssoUrl = null;
-		if (isset($this->_idp['singleSignOnService']) && isset($this->_idp['singleSignOnService']['url'])) {
-			$ssoUrl = $this->_idp['singleSignOnService']['url'];
+	public function getIdPSSOUrl() {
+        $sso_url = null;
+		if ( isset( $this->_idp['singleSignOnService'] ) && isset( $this->_idp['singleSignOnService']['url'] ) ) {
+			$sso_url = $this->_idp['singleSignOnService']['url'];
 		}
-		return $ssoUrl;
+		return $sso_url;
 	}
 
 	/**
 	 * Gets the IdP SLO url.
 	 *
-	 * @return string|null The request url of the IdP Single Logout Service
+	 * @return string|null The request url of the IdP Single Logout Service.
 	 */
-	public function getIdPSLOUrl()
-	{
-		$sloUrl = null;
-		if (isset($this->_idp['singleLogoutService']) && isset($this->_idp['singleLogoutService']['url'])) {
-			$sloUrl = $this->_idp['singleLogoutService']['url'];
+	public function getIdPSLOUrl() {
+        $slo_url = null;
+		if ( isset( $this->_idp['singleLogoutService'] ) && isset( $this->_idp['singleLogoutService']['url'] ) ) {
+			$slo_url = $this->_idp['singleLogoutService']['url'];
 		}
-		return $sloUrl;
+		return $slo_url;
 	}
 
 	/**
 	 * Gets the IdP SLO response url.
 	 *
-	 * @return string|null The response url of the IdP Single Logout Service
+	 * @return string|null The response url of the IdP Single Logout Service.
 	 */
-	public function getIdPSLOResponseUrl()
-	{
-		if (isset($this->_idp['singleLogoutService']) && isset($this->_idp['singleLogoutService']['responseUrl'])) {
+	public function getIdPSLOResponseUrl() {
+        if ( isset( $this->_idp['singleLogoutService'] ) && isset( $this->_idp['singleLogoutService']['responseUrl'] ) ) {
 			return $this->_idp['singleLogoutService']['responseUrl'];
 		}
 		return $this->getIdPSLOUrl();
@@ -879,104 +842,102 @@ class Settings
 	/**
 	 * Gets the SP metadata. The XML representation.
 	 *
-	 * @param bool     $alwaysPublishEncryptionCert When 'true', the returned
+	 * @param bool     $always_publish_encryption_cert When 'true', the returned
 	 *                                              metadata will always
 	 *                                              include an 'encryption'
 	 *                                              KeyDescriptor. Otherwise,
 	 *                                              the 'encryption'
 	 *                                              KeyDescriptor will only
 	 *                                              be included if
-	 *                                              $advancedSettings['security']['wantNameIdEncrypted']
+	 *                                              $advanced_settings['security']['wantNameIdEncrypted']
 	 *                                              or
-	 *                                              $advancedSettings['security']['wantAssertionsEncrypted']
+	 *                                              $advanced_settings['security']['wantAssertionsEncrypted']
 	 *                                              are enabled.
-	 * @param int|null $validUntil                  Metadata's valid time
-	 * @param int|null $cacheDuration               Duration of the cache in seconds
+	 * @param int|null $valid_until                  Metadata's valid time.i.
+	 * @param int|null $cache_duration               Duration of the cache in seconds.
 	 *
 	 * @return string  SP metadata (xml)
-	 * @throws Exception
-	 * @throws Error
+	 * @throws Exception|Error Cert / key error.
 	 */
-	public function getSPMetadata($alwaysPublishEncryptionCert = false, $validUntil = null, $cacheDuration = null)
-	{
-		$metadata = Metadata::builder($this->_sp, $this->_security['authnRequestsSigned'], $this->_security['wantAssertionsSigned'], $validUntil, $cacheDuration, $this->getContacts(), $this->getOrganization());
+	public function getSPMetadata( $always_publish_encryption_cert = false, $valid_until = null, $cache_duration = null ) {
+		$metadata = Metadata::builder( $this->_sp, $this->_security['authnRequestsSigned'], $this->_security['wantAssertionsSigned'], $valid_until, $cache_duration, $this->getContacts(), $this->getOrganization() );
 
-		$certNew = $this->getSPcertNew();
-		if (!empty($certNew)) {
+		$cert_new = $this->getSPcertNew();
+		if ( ! empty( $cert_new ) ) {
 			$metadata = Metadata::addX509KeyDescriptors(
 				$metadata,
-				$certNew,
-				$alwaysPublishEncryptionCert || $this->_security['wantNameIdEncrypted'] || $this->_security['wantAssertionsEncrypted']
+				$cert_new,
+				$always_publish_encryption_cert || $this->_security['wantNameIdEncrypted'] || $this->_security['wantAssertionsEncrypted']
 			);
 		}
 
 		$cert = $this->getSPcert();
-		if (!empty($cert)) {
+		if ( ! empty( $cert ) ) {
 			$metadata = Metadata::addX509KeyDescriptors(
 				$metadata,
 				$cert,
-				$alwaysPublishEncryptionCert || $this->_security['wantNameIdEncrypted'] || $this->_security['wantAssertionsEncrypted']
+				$always_publish_encryption_cert || $this->_security['wantNameIdEncrypted'] || $this->_security['wantAssertionsEncrypted']
 			);
 		}
 
-		//Sign Metadata
-		if (isset($this->_security['signMetadata']) && $this->_security['signMetadata'] != false) {
-			if ($this->_security['signMetadata'] === true) {
-				$keyMetadata = $this->getSPkey();
-				$certMetadata = $cert;
+		// Sign Metadata.
+		if ( false !== ( isset( $this->_security['signMetadata'] ) && $this->_security['signMetadata'] ) ) {
+			if ( true === $this->_security['signMetadata'] ) {
+				$key_meta_data  = $this->getSPkey();
+				$cert_meta_data = $cert;
 
-				if (!$keyMetadata) {
+				if ( ! $key_meta_data ) {
 					throw new Error(
 						'SP Private key not found.',
 						Error::PRIVATE_KEY_FILE_NOT_FOUND
 					);
 				}
 
-				if (!$certMetadata) {
+				if ( ! $cert_meta_data ) {
 					throw new Error(
 						'SP Public cert not found.',
 						Error::PUBLIC_CERT_FILE_NOT_FOUND
 					);
 				}
-			} else if (isset($this->_security['signMetadata']['keyFileName']) 
-				&& isset($this->_security['signMetadata']['certFileName'])
+			} elseif ( isset( $this->_security['signMetadata']['key_file_name'] ) 
+				&& isset( $this->_security['signMetadata']['cert_file_name'] )
 			) {
-				$keyFileName = $this->_security['signMetadata']['keyFileName'];
-				$certFileName = $this->_security['signMetadata']['certFileName'];
+				$key_file_name  = $this->_security['signMetadata']['key_file_name'];
+				$cert_file_name = $this->_security['signMetadata']['cert_file_name'];
 
-				$keyMetadataFile = $this->_paths['cert'].$keyFileName;
-				$certMetadataFile = $this->_paths['cert'].$certFileName;
+				$key_metadata_file  = $this->_paths['cert'] . $key_file_name;
+				$cert_metadata_file = $this->_paths['cert'] . $cert_file_name;
 
-				if (!file_exists($keyMetadataFile)) {
+				if ( ! file_exists( $key_metadata_file ) ) {
 					throw new Error(
 						'SP Private key file not found: %s',
 						Error::PRIVATE_KEY_FILE_NOT_FOUND,
-						array($keyMetadataFile)
+						array( $key_metadata_file )
 					);
 				}
 
-				if (!file_exists($certMetadataFile)) {
+				if ( ! file_exists( $cert_metadata_file ) ) {
 					throw new Error(
 						'SP Public cert file not found: %s',
 						Error::PUBLIC_CERT_FILE_NOT_FOUND,
-						array($certMetadataFile)
+						array( $cert_metadata_file )
 					);
 				}
-				$keyMetadata = file_get_contents($keyMetadataFile);
-				$certMetadata = file_get_contents($certMetadataFile);
-			} else if (isset($this->_security['signMetadata']['privateKey']) 
-				&& isset($this->_security['signMetadata']['x509cert'])
+				$key_meta_data  = wpcom_vip_file_get_contents( $key_metadata_file );
+				$cert_meta_data = wpcom_vip_file_get_contents( $cert_metadata_file );
+			} elseif ( isset( $this->_security['signMetadata']['privateKey'] ) 
+				&& isset( $this->_security['signMetadata']['x509cert'] )
 			) {
-				$keyMetadata = Utils::formatPrivateKey($this->_security['signMetadata']['privateKey']);
-				$certMetadata = Utils::formatCert($this->_security['signMetadata']['x509cert']);
-				if (!$keyMetadata) {
+				$key_meta_data  = Utils::formatPrivateKey( $this->_security['signMetadata']['privateKey'] );
+				$cert_meta_data = Utils::formatCert( $this->_security['signMetadata']['x509cert'] );
+				if ( ! $key_meta_data ) {
 					throw new Error(
 						'Private key not found.',
 						Error::PRIVATE_KEY_FILE_NOT_FOUND
 					);
 				}
 
-				if (!$certMetadata) {
+				if ( ! $cert_meta_data ) {
 					throw new Error(
 						'Public cert not found.',
 						Error::PUBLIC_CERT_FILE_NOT_FOUND
@@ -990,9 +951,9 @@ class Settings
 
 			}
 
-			$signatureAlgorithm = $this->_security['signatureAlgorithm'];
-			$digestAlgorithm = $this->_security['digestAlgorithm'];
-			$metadata = Metadata::signMetadata($metadata, $keyMetadata, $certMetadata, $signatureAlgorithm, $digestAlgorithm);
+			$signature_algorithm = $this->_security['signature_algorithm'];
+			$digest_algorithm    = $this->_security['digest_algorithm'];
+			$metadata            = Metadata::signMetadata( $metadata, $key_meta_data, $cert_meta_data, $signature_algorithm, $digest_algorithm );
 		}
 		return $metadata;
 	}
@@ -1000,43 +961,43 @@ class Settings
 	/**
 	 * Validates an XML SP Metadata.
 	 *
-	 * @param string $xml Metadata's XML that will be validate
+	 * @param string $xml Metadata's XML that will be validate.
 	 *
-	 * @return array The list of found errors
+	 * @return array The list of found errors.
 	 *
-	 * @throws Exception
+	 * @throws Exception Exception on validation of XML.
 	 */
-	public function validateMetadata($xml)
-	{
-		assert(is_string($xml));
+	public function validateMetadata( $xml ) {
+		assert( is_string( $xml ) );
 
 		$errors = array();
-		$res = Utils::validateXML($xml, 'saml-schema-metadata-2.0.xsd', $this->_debug, $this->getSchemasPath());
-		if (!$res instanceof DOMDocument) {
+		$res    = Utils::validateXML( $xml, 'saml-schema-metadata-2.0.xsd', $this->_debug, $this->getSchemasPath() );
+		if ( ! $res instanceof DOMDocument ) {
 			$errors[] = $res;
 		} else {
-			$dom = $res;
-			$element = $dom->documentElement;
-			if ($element->tagName !== 'md:EntityDescriptor') {
+			$dom     = $res;
+			$element = $dom->documentElement; //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			if ( 'md:EntityDescriptor' !== $element->tagName ) { //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$errors[] = 'noEntityDescriptor_xml';
 			} else {
-				$validUntil = $cacheDuration = $expireTime = null;
+				$valid_until = $cache_duration;
+				$expire_time = null;
 
-				if ($element->hasAttribute('validUntil')) {
-					$validUntil = Utils::parseSAML2Time($element->getAttribute('validUntil'));
+				if ( $element->hasAttribute( 'valid_until' ) ) {
+					$valid_until = Utils::parseSAML2Time( $element->getAttribute( 'valid_until' ) );
 				}
-				if ($element->hasAttribute('cacheDuration')) {
-					$cacheDuration = $element->getAttribute('cacheDuration');
+				if ( $element->hasAttribute( 'cache_duration' ) ) {
+					$cache_duration = $element->getAttribute( 'cache_duration' );
 				}
 
-				$expireTime = Utils::getExpireTime($cacheDuration, $validUntil);
-				if (isset($expireTime) && time() > $expireTime) {
+				$expire_time = Utils::getExpireTime( $cache_duration, $valid_until );
+				if ( isset( $expire_time ) && time() > $expire_time ) {
 					$errors[] = 'expired_xml';
 				}
 			}
 		}
 
-		// TODO: Support Metadata Sign Validation
+		// TODO: Support Metadata Sign Validation.
 
 		return $errors;
 	}
@@ -1044,27 +1005,25 @@ class Settings
 	/**
 	 * Formats the IdP cert.
 	 */
-	public function formatIdPCert()
-	{
-		if (isset($this->_idp['x509cert'])) {
-			$this->_idp['x509cert'] = Utils::formatCert($this->_idp['x509cert']);
+	public function formatIdPCert(): void {
+		if ( isset( $this->_idp['x509cert'] ) ) {
+			$this->_idp['x509cert'] = Utils::formatCert( $this->_idp['x509cert'] );
 		}
 	}
 
 	/**
 	 * Formats the Multple IdP certs.
 	 */
-	public function formatIdPCertMulti()
-	{
-		if (isset($this->_idp['x509certMulti'])) {
-			if (isset($this->_idp['x509certMulti']['signing'])) {
-				foreach ($this->_idp['x509certMulti']['signing'] as $i => $cert) {
-					$this->_idp['x509certMulti']['signing'][$i] = Utils::formatCert($cert);
+	public function formatIdPCertMulti(): void {
+		if ( isset( $this->_idp['x509certMulti'] ) ) {
+			if ( isset( $this->_idp['x509certMulti']['signing'] ) ) {
+				foreach ( $this->_idp['x509certMulti']['signing'] as $i => $cert ) {
+					$this->_idp['x509certMulti']['signing'][ $i ] = Utils::formatCert( $cert );
 				}
 			}
-			if (isset($this->_idp['x509certMulti']['encryption'])) {
-				foreach ($this->_idp['x509certMulti']['encryption'] as $i => $cert) {
-					$this->_idp['x509certMulti']['encryption'][$i] = Utils::formatCert($cert);
+			if ( isset( $this->_idp['x509certMulti']['encryption'] ) ) {
+				foreach ( $this->_idp['x509certMulti']['encryption'] as $i => $cert ) {
+					$this->_idp['x509certMulti']['encryption'][ $i ] = Utils::formatCert( $cert );
 				}
 			}
 		}
@@ -1073,30 +1032,27 @@ class Settings
 	/**
 	 * Formats the SP cert.
 	 */
-	public function formatSPCert()
-	{
-		if (isset($this->_sp['x509cert'])) {
-			$this->_sp['x509cert'] = Utils::formatCert($this->_sp['x509cert']);
+	public function formatSPCert(): void {
+        if ( isset( $this->_sp['x509cert'] ) ) {
+			$this->_sp['x509cert'] = Utils::formatCert( $this->_sp['x509cert'] );
 		}
 	}
 
 	/**
 	 * Formats the SP cert.
 	 */
-	public function formatSPCertNew()
-	{
-		if (isset($this->_sp['x509certNew'])) {
-			$this->_sp['x509certNew'] = Utils::formatCert($this->_sp['x509certNew']);
+	public function formatSPCertNew(): void {
+		if ( isset( $this->_sp['x509cert_new'] ) ) {
+			$this->_sp['x509cert_new'] = Utils::formatCert( $this->_sp['x509cert_new'] );
 		}
 	}
 
 	/**
 	 * Formats the SP private key.
 	 */
-	public function formatSPKey()
-	{
-		if (isset($this->_sp['privateKey'])) {
-			$this->_sp['privateKey'] = Utils::formatPrivateKey($this->_sp['privateKey']);
+	public function formatSPKey(): void {
+		if ( isset( $this->_sp['privateKey'] ) ) {
+			$this->_sp['privateKey'] = Utils::formatPrivateKey( $this->_sp['privateKey'] );
 		}
 	}
 
@@ -1105,22 +1061,20 @@ class Settings
 	 *
 	 * @return array Errors
 	 */
-	public function getErrors()
-	{
+	public function getErrors(): array {
 		return $this->_errors;
 	}
 
 	/**
 	 * Activates or deactivates the strict mode.
 	 *
-	 * @param bool $value Strict parameter
+	 * @param bool $value Strict parameter.
 	 *
-	 * @throws Exception
+	 * @throws Exception Throws invalid value if not boolean $value.
 	 */
-	public function setStrict($value)
-	{
-		if (!is_bool($value)) {
-			throw new Exception('Invalid value passed to setStrict()');
+	public function setStrict( $value ): void {
+		if ( ! is_bool( $value ) ) {
+			throw new Exception( 'Invalid value passed to setStrict()' );
 		}
 
 		$this->_strict = $value;
@@ -1131,18 +1085,16 @@ class Settings
 	 *
 	 * @return bool Strict parameter
 	 */
-	public function isStrict()
-	{
-		return $this->_strict;
+	public function isStrict(): boolean {
+        return $this->_strict;
 	}
 
 	/**
 	 * Returns if the debug is active.
 	 *
-	 * @return bool Debug parameter
+	 * @return bool Debug parameter.
 	 */
-	public function isDebugActive()
-	{
+	public function isDebugActive(): boolean {
 		return $this->_debug;
 	}
 
@@ -1151,28 +1103,25 @@ class Settings
 	 *
 	 * @param string $baseurl Base URL.
 	 */
-	public function setBaseURL($baseurl)
-	{
+	public function setBaseURL( $baseurl ): void {
 		$this->_baseurl = $baseurl;
 	}
 
 	/**
 	 * Returns the baseurl set on the settings if any.
 	 *
-	 * @return null|string The baseurl
+	 * @return null|string The baseurl.
 	 */
-	public function getBaseURL()
-	{
+	public function getBaseURL(): mixed {
 		return $this->_baseurl;
 	}
 
 	/**
 	 * Sets the IdP certificate.
 	 *
-	 * @param string $cert IdP certificate
+	 * @param string $cert IdP certificate.
 	 */
-	public function setIdPCert($cert)
-	{
+	public function setIdPCert( $cert ) {
 		$this->_idp['x509cert'] = $cert;
 		$this->formatIdPCert();
 	}

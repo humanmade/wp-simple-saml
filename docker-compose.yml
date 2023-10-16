@@ -2,6 +2,7 @@ version: "3.7"
 
 services:
   php:
+    image: circleci/php:7.4-node-browsers
     build:
       context: .
       dockerfile: docker/php/Dockerfile

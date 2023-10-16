@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ruleset name="NewsUKContentAPI">
-	<config name="minimum_supported_wp_version" value="8.0" />
-	<config name="testVersion" value="8.0-"/>
+	<config name="minimum_supported_wp_version" value="7.4" />
+	<config name="testVersion" value="7.4"/>
 
 	<rule ref="WordPress-Docs">
 		<severity>5</severity>
@@ -19,6 +19,24 @@
 			</property>
 		</properties>
 	</rule> -->
+
+	 
+ 	<!-- These rules may be required to be attended to at some point...-->
+	<rule ref="WordPress-VIP-Go">
+
+		<!-- DB queries, mainly direct querying, slow queries : NOTE loads of no noncing -->
+		<exclude name="WordPress.Security.NonceVerification.Missing"/> 
+		<exclude name="WordPress.Security.NonceVerification.Recommended"/> 
+		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotSanitized"/>
+		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped"/>
+		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated"/> 
+		<exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/> 
+		<exclude name="PSR2.Methods.MethodDeclaration.Underscore"/> 
+		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/> 
+		
+		
+	</rule>
+
 
 
 	<!-- Temporarily disable some sniffs that conflict with PSR-4. -->

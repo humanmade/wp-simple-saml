@@ -2,6 +2,6 @@ vendor
 composer.lock
 .idea
 log
-docker-compose.ymls
+docker-compose.yml
 .env
 .DS_Store
