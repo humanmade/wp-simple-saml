@@ -294,6 +294,8 @@ function get_metadata() {
 	try {
 		$metadata = $settings->getSPMetadata();
 		$errors   = $settings->validateMetadata( $metadata );
+	} catch ( \Throwable $e ) {
+		$errors = $e->getMessage();
 	} catch ( \Exception $e ) {
 		$errors = $e->getMessage();
 	}
@@ -360,6 +362,9 @@ function process_response() {
 
 		}
 		$saml->processResponse();
+	} catch ( \Throwable $e ) {
+		/* translators: %s = error message */
+		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
 		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
