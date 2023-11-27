@@ -54,6 +54,7 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
 	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
+	add_action( 'wpsimplesaml_user_updated', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
 
 	// is_plugin_active_for_network can only be used once the plugin.php file is
 	// included. More information can be found here:
@@ -439,30 +440,30 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 		$user = get_user_by( 'email', $email );
 	}
 
+	$first_name = isset( $map['first_name'], $attributes[ $map['first_name'] ] ) && is_array( $attributes[ $map['first_name'] ] ) ? reset( $attributes[ $map['first_name'] ] ) : '';
+	$last_name  = isset( $map['last_name'], $attributes[ $map['last_name'] ] ) && is_array( $attributes[ $map['last_name'] ] ) ? reset( $attributes[ $map['last_name'] ] ) : '';
+
+	$user_data = [
+		'ID'            => null,
+		'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
+		'user_pass'     => wp_generate_password(),
+		'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
+		'first_name'    => $first_name,
+		'last_name'     => $last_name,
+		'user_email'    => $email,
+	];
+
+	/**
+	 * Filters user data before insertion to the database
+	 *
+	 * @param array $attributes Attributes array coming from SAML Response object
+	 *
+	 * @return array User data to be used with wp_insert_user
+	 */
+	$user_data = apply_filters( 'wpsimplesaml_user_data', $user_data, $attributes );
+
 	// No user yet ? lets create a new one.
 	if ( empty( $user ) ) {
-
-		$first_name = isset( $map['first_name'], $attributes[ $map['first_name'] ] ) && is_array( $attributes[ $map['first_name'] ] ) ? reset( $attributes[ $map['first_name'] ] ) : '';
-		$last_name  = isset( $map['last_name'], $attributes[ $map['last_name'] ] ) && is_array( $attributes[ $map['last_name'] ] ) ? reset( $attributes[ $map['last_name'] ] ) : '';
-
-		$user_data = [
-			'ID'            => null,
-			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
-			'user_pass'     => wp_generate_password(),
-			'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
-			'first_name'    => $first_name,
-			'last_name'     => $last_name,
-			'user_email'    => $email,
-		];
-
-		/**
-		 * Filters user data before insertion to the database
-		 *
-		 * @param array $attributes Attributes array coming from SAML Response object
-		 *
-		 * @return array User data to be used with wp_insert_user
-		 */
-		$user_data = apply_filters( 'wpsimplesaml_user_data', $user_data, $attributes );
 
 		$user_id = wp_insert_user( $user_data );
 
@@ -479,6 +480,28 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 		 * @param array    $attributes SAML Attributes passed from IdP
 		 */
 		do_action( 'wpsimplesaml_user_created', $user, $attributes );
+	} else {
+		foreach ( $user_data as $key => $value ) {
+			if ( ! $value ) {
+				$user_data[ $key ] = $user->$key;
+			}
+		}
+
+		$user_id = wp_update_user( $user_data );
+
+		if ( is_wp_error( $user_id ) ) {
+			return $user_id;
+		}
+
+		$user = get_user_by( 'ID', $user_id );
+
+		/**
+		 * Used to handle post-user-update logic, ie: role mapping
+		 *
+		 * @param \WP_User $user       User object
+		 * @param array    $attributes SAML Attributes passed from IdP
+		 */
+		do_action( 'wpsimplesaml_user_updated', $user, $attributes );
 	}
 
 	if ( ! is_a( $user, 'WP_User' ) ) {
