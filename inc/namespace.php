@@ -414,12 +414,13 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 	$map        = get_attribute_map();
 	$attributes = $saml->getAttributes();
+	$name_id    = $saml->getNameId();
 
 	// Check whether email is the unique identifier set in SAML IDP
 	$is_email_auth = 'emailAddress' === substr( $saml->getNameIdFormat(), - strlen( 'emailAddress' ) );
 
 	if ( $is_email_auth ) {
-		$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
+		$email = filter_var( $name_id, FILTER_VALIDATE_EMAIL );
 	} else {
 		$email_field = $map['user_email'];
 		$email       = current( (array) $saml->getAttribute( $email_field ) );
@@ -433,7 +434,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	 *
 	 * @return null|false|\WP_User User object or false if not found
 	 */
-	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes );
+	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes, $name_id );
 
 	if ( null === $user ) {
 		$user = get_user_by( 'email', $email );
@@ -447,7 +448,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 		$user_data = [
 			'ID'            => null,
-			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
+			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $name_id,
 			'user_pass'     => wp_generate_password(),
 			'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
 			'first_name'    => $first_name,
