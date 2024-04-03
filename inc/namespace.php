@@ -431,6 +431,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	 *
 	 * @param string $email      Email from SAMLResponse
 	 * @param array  $attributes SAML Attributes parsed from SAMLResponse
+	 * @param string $name_id    Name id from SAMLResponse
 	 *
 	 * @return null|false|\WP_User User object or false if not found
 	 */
