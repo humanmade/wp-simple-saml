@@ -547,7 +547,8 @@ function map_user_roles( $user, array $attributes ) {
 	// Manage super admin flag
 	if ( is_sso_enabled_network_wide() ) {
 		if ( isset( $roles['network'] ) && in_array( 'superadmin', $roles['network'], true ) ) {
-			$roles = array_diff( $roles['network'], [ 'superadmin' ] );
+			// $roles = array_diff( $roles['network'], [ 'superadmin' ] );
+			// Had to remove this line.  It removes the $roles['sites'] from the array.  Cant have that as we have Super Admins who are also specific roles in specific sites.
 
 			if ( ! is_super_admin( $user->ID ) ) {
 				grant_super_admin( $user->ID );
@@ -574,9 +575,18 @@ function map_user_roles( $user, array $attributes ) {
 				$user->for_site( $site_id );
 				$user->set_role( reset( $site_roles ) );
 
-				foreach ( array_slice( $site_roles, 1 ) as $role ) {
-					$user->add_role( $role );
+				foreach ( $site_roles as $role ) {
+					// modified to include multiple roles per site.  Our sites included multiple roles in an associative array.
+					if ( is_array( $role ) ) {
+						foreach ( $role as $r ) {
+							$user->add_role( $r );
+						}
+					} else {
+						$user->add_role( $role );
+					}
 				}
+				// Switch back to original blog in the situation where the user has multiple blogs.
+				restore_current_blog();
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
 			$all_site_ids = new \WP_Site_Query( [
@@ -803,7 +813,8 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 	}
 
 	if ( is_sso_enabled_network_wide() ) {
-		$network_roles = [];
+		// $network_roles = [];
+		// removed because it's not previously named and breaks if you have $roles['sites'] and $roles['network'] in the same array.  Keys are not numeric.
 
 		// If this is a multisite, the roles array may contain a 'network' key and a 'sites' key. Otherwise, if
 		// it is a flat array, use it to add the roles for all sites
