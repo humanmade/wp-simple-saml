@@ -652,8 +652,6 @@ function cross_site_sso_redirect( $url ) {
 		$sso_url = trailingslashit( $url ) . 'sso/verify';
 	} else {
 		// If we hit a protected page, OR a subsite, log to the main site / root, then redirect to that page/subsite
-		// This doesn't work with protected pages in a sub-directory installs, ie anything outside of wp-admin there
-		// as we cannot detect the site home URL!
 		$sso_url = get_site_url( get_blog_id( $url ), '/sso/verify' );
 	}
 
