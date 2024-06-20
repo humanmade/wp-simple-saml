@@ -35,6 +35,22 @@ use OneLogin\Saml2\Response as SAML2Response;
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
 /**
+ * Filter to allow redirection in sso configured domains
+ *
+ * @action init
+ */
+function wpsimplesaml_allowed_redirect_hosts( $allowed ) {
+	$settings = Admin\get_sso_settings( 'sso_whitelisted_hosts' );
+	if ( ! empty( $settings ) ) {
+			$allowed = array_merge( $allowed, explode( ',', $settings ) );
+	}
+	$admin_url = admin_url();
+	$main_host = wp_parse_url( $admin_url, PHP_URL_HOST );
+	$allowed[] = $main_host;
+	return $allowed;
+}
+
+/**
  * Bootstrap the plugin, adding required actions and filters
  *
  * @action init
@@ -54,6 +70,9 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
 	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
+
+	// add SSO delegation whitelisted hosts to wp allowed_redirect_hosts
+	add_filter( 'allowed_redirect_hosts', __NAMESPACE__ . '\\wpsimplesaml_allowed_redirect_hosts' );
 
 	// is_plugin_active_for_network can only be used once the plugin.php file is
 	// included. More information can be found here:
@@ -205,6 +224,9 @@ function instance() {
 	}
 
 	if ( empty( $instance ) ) {
+		$new_host = $_SERVER['HTTP_HOST'];
+		$acs = wp_parse_url( $config['sp']['assertionConsumerService']['url'], PHP_URL_HOST );
+		$config['sp']['assertionConsumerService']['url'] = str_replace( $acs, $new_host, $config['sp']['assertionConsumerService']['url'] );
 		$instance = new Auth( $config );
 	}
 
@@ -732,6 +754,9 @@ function get_redirection_url() {
 	// If redirection URL is invalid or empty, fall back to admin_url()
 	if ( empty( $redirect ) || ( $redirect && ! filter_var( $redirect, FILTER_VALIDATE_URL ) ) ) {
 		$redirect = admin_url();
+		$new_host = $_SERVER['HTTP_HOST'];
+		$acs = wp_parse_url( $redirect, PHP_URL_HOST );
+		$redirect = str_replace( $acs, $new_host, $redirect );
 	}
 
 	/**
@@ -820,5 +845,5 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 		}
 	}
 
-	return $network_roles ?? (array) $roles;
+	return empty( $network_roles ) ? (array) $roles : $network_roles;
 }
