@@ -637,7 +637,15 @@ function cross_site_sso_redirect( $url ) {
 	if ( '.local' === substr( $host, - strlen( '.local' ) ) ) {
 		$allowed_hosts[] = $host;
 	}
-	if ( empty( $allowed_hosts ) || ! in_array( $host, $allowed_hosts, true ) ) {
+
+	$approved = false;
+	foreach ( $allowed_hosts as $pattern ) {
+		if ( fnmatch( $pattern, $host ) ) {
+			$approved = true;
+		}
+	}
+
+	if ( ! $approved ) {
 		/* translators: %s is domain of the blacklisted site */
 		wp_die( sprintf( esc_html__( '%s is not a whitelisted cross-network SSO site.', 'wp-simple-saml' ), esc_html( $host ) ) );
 	}
