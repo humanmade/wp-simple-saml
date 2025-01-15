@@ -3,7 +3,7 @@
 Plugin Name: WP Simple SAML
 Description: Integrate SAML 2.0 IDP without the hassle
 Author: Shady Sharaf, Human Made
-Version: 0.6.0
+Version: 0.1
 Author URI: http://hmn.md
 Text Domain: wp-simple-saml
 Domain Path: /language/
@@ -53,7 +53,7 @@ function bootstrap() {
 	add_action( 'wpsimplesaml_action_verify', __NAMESPACE__ . '\\action_verify' );
 	add_action( 'wpsimplesaml_action_metadata', __NAMESPACE__ . '\\action_metadata' );
 
-	add_action( 'wpsimplesaml_user_matched', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
+	add_action( 'wpsimplesaml_user_created', __NAMESPACE__ . '\\map_user_roles', 10, 2 );
 
 	// is_plugin_active_for_network can only be used once the plugin.php file is
 	// included. More information can be found here:
@@ -487,14 +487,6 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 		return new \WP_Error( 'invalid-user', esc_html__( 'Could not create a new user.', 'wp-simple-saml' ) );
 	}
 
-	/**
-	 * Used to handle post-user-match logic, ie: role mapping, updating attributes.
-	 *
-	 * @param \WP_User $user       User object
-	 * @param array    $attributes SAML Attributes passed from IdP
-	 */
-	do_action( 'wpsimplesaml_user_matched', $user, $attributes );
-
 	return $user;
 }
 
@@ -555,7 +547,7 @@ function map_user_roles( $user, array $attributes ) {
 	// Manage super admin flag
 	if ( is_sso_enabled_network_wide() ) {
 		if ( isset( $roles['network'] ) && in_array( 'superadmin', $roles['network'], true ) ) {
-			$roles['network'] = array_diff( $roles['network'], [ 'superadmin' ] );
+			$roles = array_diff( $roles['network'], [ 'superadmin' ] );
 
 			if ( ! is_super_admin( $user->ID ) ) {
 				grant_super_admin( $user->ID );
@@ -578,8 +570,12 @@ function map_user_roles( $user, array $attributes ) {
 
 			// Add the user to the defined sites, and assign proper role(s)
 			foreach ( $roles['sites'] as $site_id => $site_roles ) {
-				foreach ( $site_roles as $role ) {
-					add_user_to_blog( (int) $site_id, $user->ID, $role );
+				switch_to_blog( $site_id );
+				$user->for_site( $site_id );
+				$user->set_role( reset( $site_roles ) );
+
+				foreach ( array_slice( $site_roles, 1 ) as $role ) {
+					$user->add_role( $role );
 				}
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
@@ -590,8 +586,12 @@ function map_user_roles( $user, array $attributes ) {
 			] );
 
 			foreach ( $all_site_ids->sites as $site_id ) {
-				foreach ( $roles['network'] as $role ) {
-					add_user_to_blog( (int) $site_id, $user->ID, $role );
+				switch_to_blog( $site_id );
+				$user->for_site( $site_id );
+				$user->set_role( reset( $roles['network'] ) );
+
+				foreach ( array_slice( $roles['network'], 1 ) as $role ) {
+					$user->add_role( $role );
 				}
 			}
 		}
@@ -818,9 +818,7 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 		} elseif ( ! isset( $roles['network'] ) && ! isset( $roles['sites'] ) ) { // Associative but no 'network' or 'sites' keys ?
 			$network_roles = [];
 		}
-
-		return $network_roles;
 	}
 
-	return $roles;
+	return $network_roles ?? (array) $roles;
 }
