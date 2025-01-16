@@ -132,12 +132,13 @@ function config_admin_notice() {
  */
 function get_sso_settings( $option = null ) {
 	$options = [
-		'sso_enabled'           => '',
-		'sso_debug'             => 0,
-		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' ),
-		'sso_role_management'   => '',
-		'sso_whitelisted_hosts' => '',
-		'sso_idp_metadata'      => '',
+		'sso_enabled'              => '',
+		'sso_debug'                => 0,
+		'sso_sp_base'              => is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' ),
+		'sso_role_management'      => '',
+		'sso_whitelisted_hosts'    => '',
+		'sso_idp_metadata'         => '',
+		'sso_create_if_not_exists' => 1,
 	];
 
 	// Network options is used instead if the plugin is activated network-wide
@@ -215,6 +216,14 @@ function settings_fields() {
 			<textarea name="sso_idp_metadata" id="sso_idp_metadata" style="width: 100%; height: 200px" <?php disabled( (bool) $xml ); ?>><?php echo esc_html( $value ); ?></textarea>
 			<?php
 		}
+	}, $settings_section, 'sso_settings' );
+
+	register_setting( $settings_section, 'sso_create_if_not_exists', 'absint' );
+	add_settings_field( 'sso_create_if_not_exists', __( 'SSO Create user if it does not exists', 'wp-simple-saml' ), function () use ( $options ) {
+		$value = $options['sso_create_if_not_exists'];
+		?>
+		<input type="checkbox" name="sso_create_if_not_exists" id="sso_create_if_not_exists" value="1" <?php checked( $value ); ?>>
+		<?php
 	}, $settings_section, 'sso_settings' );
 
 	register_setting( $settings_section, 'sso_role_management', 'sanitize_text' );
@@ -353,6 +362,12 @@ function save_network_settings_fields() {
 
 	if ( isset( $_POST['sso_idp_metadata'] ) ) { // WPCS input var ok
 		update_site_option( 'sso_idp_metadata', wp_unslash( $_POST['sso_idp_metadata'] ) ); // WPCS input var ok
+	}
+
+	if ( isset( $_POST['sso_create_if_not_exists'] ) ) { // WPCS input var ok
+		update_site_option( 'sso_create_if_not_exists', absint( $_POST['sso_create_if_not_exists'] ) ); // WPCS input var ok
+	} else {
+		update_site_option( 'sso_create_if_not_exists', 0 ); // WPCS input var ok
 	}
 }
 
