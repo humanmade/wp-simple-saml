@@ -655,7 +655,7 @@ function cross_site_sso_redirect( $url ) {
 		$sso_url = get_site_url( get_blog_id( $url ), '/sso/verify' );
 	}
 
-	$sso_url = add_query_arg( 'redirect_to', $url, $sso_url );
+	$sso_url = add_query_arg( 'redirect_to', urlencode( $url ), $sso_url );
 
 	?>
 
