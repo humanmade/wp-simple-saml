@@ -86,6 +86,8 @@ add_filter( 'wpsimplesaml_attribute_mapping', function(){
 
 ## Testing
 
+This plugin can be tested or developed within any local WordPress environment. For convenience, a local WordPress server can also be run by executing `npm run dev`: this command will start a local server at http://localhost:8888/ (requires Docker). Run `npm run wp-env stop` to shut down the server when finished.
+
 As SSO authorities are usually a pain to change, and credentials take time to be configured, we've documented steps to get a sample SAML IdP ( Identity provider ) up and running using a test docker container. See more at [Testing SSO Locally](https://github.com/humanmade/wp-simple-saml/wiki/Testing-SSO-locally). 
 
 ## Contribute

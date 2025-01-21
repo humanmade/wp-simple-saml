@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "WordPress plugin for integration with SAML SSO",
   "scripts": {
+    "wp-env": "wp-env",
+    "dev": "wp-env start",
     "cs": "vendor/bin/phpcs --standard=./vendor/humanmade/coding-standards/ruleset.xml .",
     "precommit": "npm run cs"
   },
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/humanmade/wp-simple-saml#readme",
   "devDependencies": {
-    "husky": "^0.14.3"
+    "@wordpress/env": "^10.16.0",
+    "husky": "^9.1.7"
   }
 }
