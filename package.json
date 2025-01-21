@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "WordPress plugin for integration with SAML SSO",
   "scripts": {
+    "wp-env": "wp-env",
+    "dev": "wp-env start",
     "cs": "vendor/bin/phpcs --standard=./vendor/humanmade/coding-standards/ruleset.xml .",
     "precommit": "npm run cs"
   },
