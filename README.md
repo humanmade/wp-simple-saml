@@ -1,24 +1,18 @@
+# WordPress Simple SAML
+
 <table width="100%">
 	<tr>
-		<td align="left" width="70">
-			<strong>WordPress Simple SAML</strong><br />
-			Easy to use Single-sign-on ( SSO ) SAML integration plugin for WordPress, with multi-site / multi-network support. 
-		</td>
-		<td align="right" width="20%">
-			<a href="https://travis-ci.org/humanmade/wp-simple-saml">
-				<img src="https://travis-ci.org/humanmade/wp-simple-saml.svg?branch=master" alt="Build status">
-			</a>
-		</td>
-	</tr>
-	<tr>
-		<td>
-			A <strong><a href="https://hmn.md/">Human Made</a></strong> project. Maintained by <a href="https://github.com/shadyvb">Shady Sharaf</a>.
+		<td align="left" width="70%">
+			Easy to use Single-sign-on ( SSO ) SAML integration plugin for WordPress, with multi-site / multi-network support.
 		</td>
 		<td align="center">
-			<img src="https://hmn.md/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" />
+			<p style="font-size:small">Created by</p>
+			<img src="https://humanmade.com/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" />
 		</td>
 	</tr>
 </table>
+
+---
 
 WordPress Simple SAML is a flexible, extensible SAML integration plugin, which does most of the grunt work while keeping everything configurable through actions and filters throughout the plugin.
 
@@ -26,7 +20,7 @@ The plugin supports multi-site networks, and cross-network SSO delegation as wel
 
 WordPress Simple SAML uses [OneLogin's PHP-SAML](https://github.com/onelogin/php-saml) toolkit for SAML API integration.
 
-## Getting Set Up
+## Installation
 
 -   Copy the plugin files to your `wp-content/plugins` directory
 -   Activate the plugin
@@ -39,11 +33,11 @@ WordPress Simple SAML uses [OneLogin's PHP-SAML](https://github.com/onelogin/php
 add_filter( 'wpsimplesaml_network_activated', '__return_true' )
 ```
 
-## Configuration
+### Configuration
 
 There is two ways to configure the plugin, either from the admin interface or using filters, both can be used interchangably as the project requires, usually filters prevail database settings though.
 
-### Option 1: Admin
+#### Option 1: Admin
 
 Go to `Settings \ General` if single installation, or `Network Settings` if multisite.
 
@@ -62,7 +56,7 @@ Go to `Settings \ General` if single installation, or `Network Settings` if mult
 -   `SSO Config validation`
     Shows information about IdP metadata and validity of its settings.
 
-### Option 1: Code
+#### Option 1: Code
 
 WordPress Simple SAML is built to be as extensible as possible, so most aspects of the login/validation process can be tweaked as needed by using the available well-documented [Hooks](https://github.com/humanmade/wp-simple-saml/wiki/Hooks).
 
@@ -83,13 +77,17 @@ add_filter( 'wpsimplesaml_attribute_mapping', function(){
 } );
 ```
 
-## Testing
+## Development
+
+### Testing
 
 > **TL;DR**
->
-> -   Make sure you have Docker installed
-> -   `npm install`
-> -   `npm run dev`
+
+```
+# Make sure you have Docker installed, then run:
+npm install
+npm run dev
+```
 
 This plugin can be tested or developed within any local WordPress environment.
 
@@ -99,7 +97,7 @@ Run `npm run wp-env stop` to shut down the server when finished.
 
 As SSO authorities are usually a pain to change, and credentials take time to be configured, we've documented steps to get a sample SAML IdP ( Identity provider ) up and running using a test docker container. See more at [Testing SSO Locally](https://github.com/humanmade/wp-simple-saml/wiki/Testing-SSO-locally).
 
-## Developing
+### Developing
 
 To get development dependencies, install composer and npm dependencies via:
 
@@ -110,22 +108,16 @@ npm install
 
 This installs Human made's version of WordPress Coding Standards via PHP Code Sniffer, and symlinks a precommit hook to automatically check all commits for code quality concerns.
 
-### Workflow
+## Contributing
 
--   Find an issue you'd like to help with, or create a new one for the change you'd like to introduce.
--   Fork the repo to your own account
--   Issue pull-requests from your fork to ours
--   Tag the issue you're trying to resolve in your pull-request for some context
--   Make sure the pull-request passed all Travis checks
--   Tag any of the contributors for a review.
+- Fork the repository
+- Create a feature branch (git checkout -b feature/amazing-feature)
+- Commit changes (git commit -m 'Add some amazing feature')
+- Push to branch (git push origin feature/amazing-feature)
+- Open a Pull Request
 
-## Credits
+### Contribution Guidelines
 
-Created by Human Made for network-wide SAML SSO Integrations, because of the lack of a well-written WordPress integration with the features/flexibility our clients require.
-
-Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
-
-Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
 
 ## Changelog
 
@@ -144,3 +136,11 @@ Interested in joining in on the fun? [Join us, and become human!](https://hmn.md
 
 -   0.1
     -   Stable version
+
+## Credits
+
+Created by <a href="https://hmn.md/"><img src="https://humanmade.com/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" alt="Human Made" /></a>
+
+Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
+
+Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
