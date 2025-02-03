@@ -135,6 +135,7 @@ function get_sso_settings( $option = null ) {
 		'sso_enabled'           => '',
 		'sso_debug'             => 0,
 		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' ),
+		'sso_login_name'        => 'SSO Login',
 		'sso_role_management'   => '',
 		'sso_whitelisted_hosts' => '',
 		'sso_idp_metadata'      => '',
@@ -190,6 +191,14 @@ function settings_fields() {
 				</option>
 			<?php endforeach; ?>
 		</select>
+		<?php
+	}, $settings_section, 'sso_settings' );
+
+	register_setting( $settings_section, 'sso_login_name' );
+	add_settings_field( 'sso_login_name', __( 'SSO Login Link Name', 'wp-simple-saml' ), function () use ( $options ) {
+		$value = $options['sso_login_name'];
+		?>
+		<input type="text" name="sso_login_name" id="sso_login_name" value="<?php echo esc_attr( $value ); ?>" placeholder="SSO Login">
 		<?php
 	}, $settings_section, 'sso_settings' );
 
@@ -337,6 +346,10 @@ function save_network_settings_fields() {
 		update_site_option( 'sso_debug', absint( $_POST['sso_debug'] ) ); // WPCS input var ok
 	} else {
 		delete_site_option( 'sso_debug' ); // WPCS input var ok
+	}
+
+	if ( isset( $_POST['sso_login_name'] ) ) { // WPCS input var ok
+		update_site_option( 'sso_login_name', esc_html( wp_unslash( $_POST['sso_login_name'] ) ) ); // WPCS input var ok
 	}
 
 	if ( isset( $_POST['sso_sp_base'] ) ) { // WPCS input var ok
