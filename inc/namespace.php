@@ -580,7 +580,7 @@ function map_user_roles( $user, array $attributes ) {
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
 			$all_site_ids = new \WP_Site_Query( [
-				'network' => get_network()->id,
+				'network' => get_current_network_id(),
 				'fields'  => 'ids',
 				'number'  => 999,
 			] );
