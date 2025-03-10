@@ -699,7 +699,7 @@ function get_blog_id( $url ) {
 		return 0;
 	}
 
-	$site = get_site_by_path( $fragments['host'], $fragments['path'] );
+	$site = get_site_by_path( $fragments['host'], $fragments['path'] ?? '' );
 
 	$blog_id = 0;
 	if ( $site ) {
