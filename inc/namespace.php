@@ -670,10 +670,14 @@ function cross_site_sso_redirect( $url ) {
 		do_action( 'wpsimplesaml_cross_sso_form_inputs' );
 		?>
 	</form>
-	<?php // @codingStandardsIgnoreEnd ?>
-	<?php // Removes line breaks and spaces from the script below, so it can be hashed properly to be excluded from the Browser CSP. ?>
-<script>setTimeout(function(){document.getElementById('sso_form').submit();},100);</script>
-	<?php
+	<?php 
+	wp_enqueue_script(
+		'wp-simple-saml-csr',
+		plugins_url( '/assets/csr.js', PLUGIN_FILE ),
+		[],
+		null
+	);
+	print_footer_scripts();
 	exit;
 }
 

@@ -31,6 +31,8 @@ namespace HumanMade\SimpleSaml;
 
 use WP_CLI;
 
+const PLUGIN_FILE = __FILE__;
+
 require_once __DIR__ . '/inc/namespace.php';
 require_once __DIR__ . '/inc/admin/namespace.php';
 
