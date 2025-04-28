@@ -671,7 +671,7 @@ function cross_site_sso_redirect( $url ) {
 		?>
 	</form>
 	<?php // @codingStandardsIgnoreEnd ?>
-	<?php // Removes line break and spaces from the script below, so it could be hash properly to be excluded from the Browser CSP. ?>
+	<?php // Removes line breaks and spaces from the script below, so it can be hashed properly to be excluded from the Browser CSP. ?>
 <script>setTimeout(function(){document.getElementById('sso_form').submit();},100);</script>
 	<?php
 	exit;
