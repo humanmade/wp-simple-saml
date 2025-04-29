@@ -14,7 +14,7 @@
 		}
 	],
 	"require": {
-		"onelogin/php-saml": "^3.0"
+		"onelogin/php-saml": "^4.0"
 	},
 	"require-dev": {
 		"humanmade/coding-standards": "dev-master"
