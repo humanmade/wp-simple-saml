@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<ruleset name="HM">
+	<description>Human Made coding standards.</description>
+
+	<exclude-pattern>node_modules/*</exclude-pattern>
+	<exclude-pattern>vendor/*</exclude-pattern>
+
+	<arg name="extensions" value="php" />
+
+	<autoload>bootstrap.php</autoload>
+
+	<!-- Include everything from the minimum set -->
+	<rule ref="HM-Minimum" />
+
+	<!-- Check for PHP cross-version compatibility. -->
+	<rule ref="PHPCompatibilityWP" />
+
+	<rule ref="WordPress-Core">
+		<!-- Allow with or without semicolons. -->
+		<exclude name="Squiz.PHP.EmbeddedPhp.NoSemicolon" />
+
+		<!-- Exclude other conflicting rules. -->
+		<exclude name="WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned" />
+		<exclude name="WordPress.PHP.DevelopmentFunctions.error_log_trigger_error" />
+		<exclude name="Generic.Formatting.MultipleStatementAlignment.NotSameWarning" />
+
+		<!-- We like short arrays and ternaries around here -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax" />
+		<exclude name="WordPress.PHP.DisallowShortTernary" />
+
+		<!--
+		OK, real talk right now. Yoda conditions are ridiculous.
+
+		The fundamental problem that Yoda conditions attempts to solve is:
+		the equality operator is very close to the assignment operator.
+		It's easy to mess up and accidentally assign to the variable you're
+		trying to check.
+
+		Here's the thing though. Yoda conditions just don't read correctly
+		in the code flow. They require you to change the way you think
+		about the control flow.
+
+		Rather than forcing every conditional to be backwards, why not ban
+		assignment from conditionals? You never really *need* to assign in
+		a conditional.
+
+		So, here's where I stand: no to Yoda conditions. Yes to banning
+		assignment in conditionals.
+		-->
+		<exclude name="WordPress.PHP.YodaConditions" />
+	</rule>
+
+	<!-- Require proper docblocks be used in all PHP files -->
+	<rule ref="WordPress-Docs">
+		<exclude name="Squiz.Commenting.FileComment.MissingPackageTag" />
+		<exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop" />
+		<exclude name="Squiz.Commenting.FunctionComment.ThrowsNoFullStop" />
+		<exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType" />
+	</rule>
+
+	<!-- Prefer alignment over line length. -->
+	<rule ref="WordPress.Arrays.MultipleStatementAlignment">
+		<properties>
+			<property name="maxColumn" value="1000" />
+		</properties>
+	</rule>
+
+	<!-- Allow . in hook names. -->
+	<rule ref="WordPress.NamingConventions.ValidHookName">
+		<properties>
+			<property name="additionalWordDelimiters" value="." />
+		</properties>
+	</rule>
+	
+	<!-- Ease up on the PHP DOM* objects. -->
+	<rule ref="WordPress.NamingConventions.ValidVariableName">
+		<properties>
+			<property name="customPropertiesWhitelist" type="array">
+				<!-- DOMDocument::$documentElement -->
+				<element value="documentElement" />
+				<!-- DOMElement::$childElementCount -->				
+				<element value="childElementCount" />
+				<!-- DOMElement::$parentNode -->
+				<element value="parentNode" />
+				<!-- DOMNode::$childNodes -->				
+				<element value="childNodes" />
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.Security.PluginMenuSlug" />
+	<rule ref="WordPress.Security.PluginMenuSlug.Using__FILE__">
+		<type>error</type>
+	</rule>
+
+	<rule ref="WordPress.WP.CronInterval" />
+	<rule ref="WordPress.WP.CronInterval.CronSchedulesInterval">
+		<type>error</type>
+		<message>Scheduling crons at %s sec ( less than %s minutes ) is prohibited.</message>
+	</rule>
+
+	<!-- Allow for underscores in theme template file names -->
+	<rule ref="WordPress.Files.FileName">
+		<properties>
+			<property name="is_theme" value="true" />
+		</properties>
+	</rule>
+
+	<!--
+	Restore the ability to have multiple arguments per line
+
+	WPCS disallowed this behavior in 1.1.0, but we'd like to keep it until
+	there is a reason to disallow multiple arguments.
+	Ref: https://github.com/WordPress-Coding-Standards/WordPress-Coding-Standards/commit/bb8a48671e213a5588a6439ea52411eeefab4b0f
+	-->
+	<rule ref="PEAR.Functions.FunctionCallSignature">
+		<properties>
+			<property name="allowMultipleArguments" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket">
+		<severity>0</severity>
+	</rule>
+	<rule ref="PEAR.Functions.FunctionCallSignature.CloseBracketLine">
+		<severity>0</severity>
+	</rule>
+
+	<!--
+	HM Rules / HM RULEZZZZ
+
+	https://engineering.hmn.md/how-we-work/style/php/
+	-->
+
+	<!-- Disallow long array syntax. -->
+	<rule ref="Generic.Arrays.DisallowLongArraySyntax" />
+
+	<!-- Single statement on same line. -->
+	<rule ref="Generic.Formatting.DisallowMultipleStatements" />
+
+	<!-- Namespacing required for classes. -->
+	<rule ref="PSR1.Classes.ClassDeclaration" />
+
+	<!-- Declare symbols or run code, but not both. -->
+	<rule ref="PSR1.Files.SideEffects" />
+
+	<!-- Namespacing required for functions. -->
+	<rule ref="PSR2.Namespaces.NamespaceDeclaration" />
+
+	<!-- Namespacing of `use` statements. -->
+	<rule ref="PSR2.Namespaces.UseDeclaration">
+		<exclude name="PSR2.Namespaces.UseDeclaration.MultipleDeclarations" />
+	</rule>
+	<rule ref="PSR2R.Namespaces.UnusedUseStatement" />
+	<rule ref="PSR2R.Namespaces.UseInAlphabeticalOrder" />
+
+	<!-- Ban inline assignment in control structures (see note on Yoda Conditions above). -->
+	<rule ref="PSR2R.ControlStructures.NoInlineAssignment" />
+
+	<!-- Our custom empty line rule handles superfluous whitespace better -->
+	<rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
+		<exclude name="Squiz.WhiteSpace.SuperfluousWhitespace.EmptyLines" />
+	</rule>
+
+	<!-- Allow multiple variable assignments, but only outside of conditionals -->
+	<rule ref="Squiz.PHP.DisallowMultipleAssignments">
+		<exclude name="Squiz.PHP.DisallowMultipleAssignments.Found" />
+	</rule>
+
+</ruleset>

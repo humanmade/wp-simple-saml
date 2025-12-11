@@ -1,0 +1,30 @@
+<?php
+
+namespace PSR2R\Tests\PHP;
+
+/**
+ * Class RemoveFunctionAliasUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\PHP
+ */
+class RemoveFunctionAliasUnitTestInc {
+	public function one() {
+		$a = is_int(1);
+		$b = is_int(1);
+		$c = is_float(1);
+		$d = is_float(1);
+		$e = is_writable(1);
+		$f = implode('', []);
+		$g = array_key_exists('a', []);
+		$h = count([1], COUNT_RECURSIVE);
+		$i = count([1]);
+		$j = strstr('a', 'a', true);
+		$k = strstr('a', 'a');
+		$l = ini_set('memory_limit', -1);
+		$m = fwrite(null, 'a', 1);
+		$o = rtrim('a', 'a');
+		$n = exit('now');
+	}
+}

@@ -1,0 +1,28 @@
+<?php
+
+namespace PSR2R\Tests\PHP;
+
+/**
+ * Class PreferStaticOverSelfUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\PHP
+ */
+class PreferStaticOverSelfUnitTestInc {
+	private static $a = 1;
+	public static function one() {
+		return static::$a;
+	}
+
+	public function two() {
+		$b = static::$a;
+		$c = static::one();
+		$d = static::one();
+		$e = static::$a;
+		$f = new self;
+		$g = new self();
+		$h = new static;
+		$i = new static();
+	}
+}

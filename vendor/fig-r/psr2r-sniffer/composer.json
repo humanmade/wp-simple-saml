@@ -1,0 +1,45 @@
+{
+	"name": "fig-r/psr2r-sniffer",
+	"license": "MIT",
+	"description": "Code-Sniffer, Auto-Fixer and Tokenizer for PSR2-R",
+	"type": "phpcodesniffer-standard",
+	"keywords": ["cs", "codesniffer"],
+	"authors": [
+		{
+			"name": "Mark Scherer",
+			"homepage": "http://www.dereuromark.de",
+			"role": "Contributor"
+		}
+	],
+	"require": {
+		"php": ">=5.4.16",
+		"squizlabs/php_codesniffer": "^3.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"PSR2R\\": "PSR2R"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"PSR2R\\Base\\": "tests/PSR2R/Base",
+			"PSR2R\\Tests\\": "tests/PSR2R/Tests"
+		}
+	},
+	"bin": [
+		"bin/tokenize",
+		"bin/sniff"
+	],
+	"scripts": {
+		"docs": "php docs/generate.php",
+		"docs-listing": "phpcs -e --standard=PSR2R/ruleset.xml",
+		"cs-check": "phpcs --standard=PSR2R/ruleset.xml -p -s --ignore=psr2r-sniffer/vendor/,tests/files/,*.inc,*.fixed ./",
+		"cs-fix": "phpcbf --standard=PSR2R/ruleset.xml --ignore=psr2r-sniffer/vendor/,tests/files/,*.inc,*.fixed ./",
+		"test": "php phpunit.phar",
+		"test-setup": "[ ! -f phpunit.phar ] && wget https://phar.phpunit.de/phpunit-5.7.phar && mv phpunit-5.7.phar phpunit.phar || true",
+		"test-setup-mac": "[ ! -f phpunit.phar ] && curl -OL https://phar.phpunit.de/phpunit-5.7.phar && mv phpunit-5.7.phar phpunit.phar || true",
+		"test-coverage": "php phpunit.phar --log-junit tmp/coverage/unitreport.xml --coverage-html tmp/coverage --coverage-clover tmp/coverage/coverage.xml",
+		"phpstan": "phpstan analyse -c tests/phpstan.neon -l 5 PSR2R/",
+		"phpstan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan-shim:^0.11 && mv composer.backup composer.json"
+	}
+}

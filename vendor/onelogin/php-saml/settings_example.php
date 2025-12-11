@@ -5,7 +5,7 @@ $settings = array(
     // or unencrypted messages if it expects them signed or encrypted
     // Also will reject the messages if not strictly follow the SAML
     // standard: Destination, NameId, Conditions ... are validated too.
-    'strict' => false,
+    'strict' => true,
 
     // Enable debug mode (to print errors)
     'debug' => false,
@@ -26,15 +26,15 @@ $settings = array(
             // URL Location where the <Response> from the IdP will be returned
             'url' => '',
             // SAML protocol binding to be used when returning the <Response>
-            // message.  Onelogin Toolkit supports for this endpoint the
-            // HTTP-Redirect binding only
+            // message.  SAML Toolkit supports for this endpoint the
+            // HTTP-POST binding only
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
         ),
         // If you need to specify requested attributes, set a
         // attributeConsumingService. nameFormat, attributeValue and
         // friendlyName can be omitted. Otherwise remove this section.
         "attributeConsumingService"=> array(
-                "ServiceName" => "SP test",
+                "serviceName" => "SP test",
                 "serviceDescription" => "Test Service",
                 "requestedAttributes" => array(
                     array(
@@ -52,7 +52,7 @@ $settings = array(
             // URL Location where the <Response> from the IdP will be returned
             'url' => '',
             // SAML protocol binding to be used when returning the <Response>
-            // message.  Onelogin Toolkit supports for this endpoint the
+            // message.  SAML Toolkit supports for this endpoint the
             // HTTP-Redirect binding only
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ),
@@ -69,7 +69,7 @@ $settings = array(
         /*
          * Key rollover
          * If you plan to update the SP x509cert and privateKey
-         * you can define here the new x509cert and it will be 
+         * you can define here the new x509cert and it will be
          * published on the SP metadata so Identity Providers can
          * read them and get ready for rollover.
          */
@@ -85,16 +85,19 @@ $settings = array(
             // URL Target of the IdP where the SP will send the Authentication Request Message
             'url' => '',
             // SAML protocol binding to be used when returning the <Response>
-            // message.  Onelogin Toolkit supports for this endpoint the
-            // HTTP-POST binding only
+            // message.  SAML Toolkit supports for this endpoint the
+            // HTTP-Redirect binding only
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ),
         // SLO endpoint info of the IdP.
         'singleLogoutService' => array(
             // URL Location of the IdP where the SP will send the SLO Request
             'url' => '',
+            // URL location of the IdP where the SP SLO Response will be sent (ResponseLocation)
+            // if not set, url for the SLO Request will be used
+            'responseUrl' => '',
             // SAML protocol binding to be used when returning the <Response>
-            // message.  Onelogin Toolkit supports for this endpoint the
+            // message.  SAML Toolkit supports for this endpoint the
             // HTTP-Redirect binding only
             'binding' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
         ),
@@ -116,7 +119,7 @@ $settings = array(
         // 'certFingerprintAlgorithm' => 'sha1',
 
         /* In some scenarios the IdP uses different certificates for
-         * signing/encryption, or is under key rollover phase and more 
+         * signing/encryption, or is under key rollover phase and more
          * than one certificate is published on IdP metadata.
          * In order to handle that the toolkit offers that parameter.
          * (when used, 'x509cert' and 'certFingerprint' values are

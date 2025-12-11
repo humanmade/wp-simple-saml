@@ -1,0 +1,31 @@
+<?php
+
+namespace PSR2R\Tests\Whitespace;
+
+/**
+ * Class ArraySpacingUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Whitespace
+ */
+class ArraySpacingUnitTestInc {
+	private static $a = [ 1 ];
+	public function one() {
+		$a = array( 1, 2);
+		$b = array( 1, 2 );
+		$c = array(1, 2 );
+		$d = array(1, 2);
+		$e = array(
+			1 => 2,
+		);
+		$f = array(1 => 2);
+		$g = array( 1 => 2);
+		$h = array(1 => 2 );
+		$i = array( 1=>2 );
+		$j = [ 1 => 2 ];
+		$k = [
+			1, 2, 3, 4,
+		];
+	}
+}

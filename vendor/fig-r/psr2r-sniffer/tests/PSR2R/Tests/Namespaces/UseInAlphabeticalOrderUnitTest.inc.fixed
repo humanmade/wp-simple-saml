@@ -1,0 +1,21 @@
+<?php
+
+namespace PSR2R\Tests\Namespaces;
+
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Tests\Core\File as CoreFile;
+use PSR2R\Base\AbstractBase;
+use PSR2R\Tools\Traits\CommentingTrait;
+use PSR2R\Tools\Traits\NamespaceTrait;
+use SebastianBergmann\CodeCoverage\Node\AbstractNode;
+use ZendAPI_Job;
+
+/**
+ * Class UseInAlphabeticalOrderUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Namespaces
+ */
+class UseInAlphabeticalOrderUnitTestInc {
+}

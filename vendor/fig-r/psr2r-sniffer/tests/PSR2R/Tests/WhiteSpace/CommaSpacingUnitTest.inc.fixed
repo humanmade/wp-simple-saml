@@ -1,0 +1,25 @@
+<?php
+
+namespace PSR2R\Tests\WhiteSpace;
+
+/**
+ * Class CommaSpacingUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\WhiteSpace
+ */
+class CommaSpacingUnitTestInc {
+	private static $a = [ 1 ];
+	private static $b = [
+		1,
+	];
+
+	public function one() {
+		$a = [1, 2];
+		$b = [1, 2];
+		$c = [1, 2];
+		$d = [1, 2, 3, 4];
+		$e = [1, 2, 3, 4 => 5];
+	}
+}

@@ -1,0 +1,23 @@
+<?php
+
+namespace PSR2R\Tests\Namespaces;
+
+use PHP_CodeSniffer\Config;
+use Other\Config as OtherConfig;
+use PHP_CodeSniffer\Files\File;
+use PHP_CodeSniffer\Ruleset;
+
+/**
+ * Class NoInlineFullyQualifiedClassNameUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Namespaces
+ */
+class NoInlineFullyQualifiedClassNameUnitThreeInc {
+	public function one() {
+		$config = new Config();
+		$extra = new OtherConfig();
+		$object = new File('', new Ruleset($config), $config);
+	}
+}

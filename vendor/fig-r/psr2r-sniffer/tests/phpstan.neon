@@ -1,0 +1,7 @@
+parameters:
+    autoload_files:
+        - %rootDir%/../../../tests/phpstan_bootstrap.php
+    excludes_analyse:
+        - %currentWorkingDirectory%/PSR2R/Tools/Sniffer.php
+    ignoreErrors:
+        - '#Empty array passed to foreach.#'

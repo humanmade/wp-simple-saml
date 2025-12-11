@@ -1,0 +1,23 @@
+<?php
+
+namespace PSR2R\Tests\WhiteSpace;
+
+/**
+ * Class UnaryOperatorSpacingUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\WhiteSpace
+ */
+class UnaryOperatorSpacingUnitTestInc {
+	public function one() {
+		$a = [1, 2, 3];
+		$i = 0;
+		$b = $a[ ++$i ];
+		$c = $a[ $i++ ];
+		$d =  ~$b;
+		$e = ! $d;
+		$f = --$i;
+		$g = &$i;
+	}
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+	colors="true"
+	processIsolation="false"
+	stopOnFailure="false"
+	bootstrap="./tests/bootstrap.php"
+	>
+	<php>
+		<ini name="memory_limit" value="-1"/>
+		<ini name="apc.enable_cli" value="1"/>
+	</php>
+
+	<!-- Add any additional test suites you want to run here -->
+	<testsuites>
+		<testsuite name="Sniffer Test Suite">
+			<directory>./tests/Sniffs</directory>
+		</testsuite>
+		<testsuite name="Extension of PHP_CodeSniffer Test Suite">
+			<file>tests/AllTests.php</file>
+		</testsuite>
+		<!-- Add plugin test suites here. -->
+	</testsuites>
+
+	<filter>
+		<whitelist processUncoveredFilesFromWhitelist="true">
+			<directory>./PSR2R</directory>
+		</whitelist>
+		<blacklist>
+			<directory>./vendor</directory>
+		</blacklist>
+	</filter>
+
+</phpunit>

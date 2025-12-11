@@ -1,0 +1,14 @@
+<?php
+
+namespace PSR2R\Tests\Namespaces;
+
+
+/**
+ * Class UnusedUseStatementUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Namespaces
+ */
+class UnusedUseStatementUnitTestInc {
+}

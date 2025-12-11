@@ -1,0 +1,32 @@
+<?php
+
+namespace PSR2R\Tests\Namespaces;
+
+use PSR2R\Base\AbstractBase;
+use PHP_CodeSniffer\Util\Tokens;
+use Other\Names\Tokens as NamesTokens;
+use PHP_CodeSniffer\Files\File;
+
+/**
+ * Class NoInlineFullyQualifiedClassNameUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Namespaces
+ */
+class NoInlineFullyQualifiedClassNameUnitTestInc extends AbstractBase {
+	protected function getErrorList(Tokens $tokens = null) {
+		return [
+		];
+	}
+
+	protected function getOtherList(NamesTokens $tokens = null) {
+		return [
+		];
+	}
+
+	protected function getWarningList(File $file = null) {
+		return [
+		];
+	}
+}

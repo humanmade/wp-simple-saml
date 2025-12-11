@@ -1,0 +1,26 @@
+<?php
+
+namespace PSR2R\Tests\Commenting;
+
+/**
+ * Class InlineDocBlockUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\Commenting
+ */
+class InlineDocBlockUnitTestInc {
+	public function one() {
+		$a = 1; /* whatever */
+		if ($a) { /* one */
+			$a = 2;
+		} /* two */
+		/*
+		 * three
+		 */
+		/** four **/
+		/*@var  array $b*/
+		/*  @var array $x */
+		/*  @var  array  $y  */
+	}
+}

@@ -1,0 +1,20 @@
+<?php
+
+namespace PSR2R\Tests\PHP;
+
+/**
+ * Class ShortCastUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\PHP
+ */
+class ShortCastUnitTestInc {
+	public function one() {
+		$a = (int)1;
+		$b = (int)1;
+		$c = (bool)1;
+		$d = (bool)1;
+		$e = (bool)1;
+	}
+}

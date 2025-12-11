@@ -2,15 +2,13 @@
 /**
  * This file is part of php-saml.
  *
- * (c) OneLogin Inc
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
  * @package OneLogin
- * @author  OneLogin Inc <saml-info@onelogin.com>
- * @license MIT https://github.com/onelogin/php-saml/blob/master/LICENSE
- * @link    https://github.com/onelogin/php-saml
+ * @author  Sixto Martin <sixto.martin.garcia@gmail.com>
+ * @license MIT https://github.com/SAML-Toolkits/php-saml/blob/master/LICENSE
+ * @link    https://github.com/SAML-Toolkits/php-saml
  */
 
 namespace OneLogin\Saml2;
@@ -27,7 +25,7 @@ use DOMXPath;
 use Exception;
 
 /**
- * Utils of OneLogin PHP Toolkit
+ * Utils of SAML PHP Toolkit
  *
  * Defines several often used methods
  */
@@ -82,13 +80,24 @@ class Utils
         assert($dom instanceof DOMDocument);
         assert(is_string($xml));
 
-        if (strpos($xml, '<!ENTITY') !== false) {
-            throw new Exception('Detected use of ENTITY in XML, disabled to prevent XXE/XEE attacks');
+        $oldEntityLoader = null;
+        if (PHP_VERSION_ID < 80000) {
+            $oldEntityLoader = libxml_disable_entity_loader(true);
         }
 
-        $oldEntityLoader = libxml_disable_entity_loader(true);
         $res = $dom->loadXML($xml);
-        libxml_disable_entity_loader($oldEntityLoader);
+
+        if (PHP_VERSION_ID < 80000) {
+            libxml_disable_entity_loader($oldEntityLoader);
+        }
+
+        foreach ($dom->childNodes as $child) {
+            if ($child->nodeType === XML_DOCUMENT_TYPE_NODE) {
+                throw new Exception(
+                    'Detected use of DOCTYPE/ENTITY in XML, disabled to prevent XXE/XEE attacks'
+                );
+            }
+        }
 
         if (!$res) {
             return false;
@@ -105,12 +114,13 @@ class Utils
      * @param string|DOMDocument $xml    The XML string or document which should be validated.
      * @param string             $schema The schema filename which should be used.
      * @param bool               $debug  To disable/enable the debug mode
+     * @param string             $schemaPath Change schema path
      *
      * @return string|DOMDocument $dom  string that explains the problem or the DOMDocument
      *
      * @throws Exception
      */
-    public static function validateXML($xml, $schema, $debug = false)
+    public static function validateXML($xml, $schema, $debug = false, $schemaPath = null)
     {
         assert(is_string($xml) || $xml instanceof DOMDocument);
         assert(is_string($schema));
@@ -128,10 +138,20 @@ class Utils
             }
         }
 
-        $schemaFile = __DIR__ . '/schemas/' . $schema;
-        $oldEntityLoader = libxml_disable_entity_loader(false);
+        if (isset($schemaPath)) {
+            $schemaFile = $schemaPath . $schema;
+        } else {
+            $schemaFile = __DIR__ . '/schemas/' . $schema;
+        }
+
+        $oldEntityLoader = null;
+        if (PHP_VERSION_ID < 80000) {
+            $oldEntityLoader = libxml_disable_entity_loader(false);
+        }
         $res = $dom->schemaValidate($schemaFile);
-        libxml_disable_entity_loader($oldEntityLoader);
+        if (PHP_VERSION_ID < 80000) {
+            libxml_disable_entity_loader($oldEntityLoader);
+        }
         if (!$res) {
             $xmlErrors = libxml_get_errors();
             syslog(LOG_INFO, 'Error validating the metadata: '.var_export($xmlErrors, true));
@@ -192,24 +212,27 @@ class Utils
     /**
      * Returns a x509 cert (adding header & footer if required).
      *
-     * @param string $cert  A x509 unformated cert
-     * @param bool   $heads True if we want to include head and footer
+     * @param string $x509cert  A x509 unformated cert
+     * @param bool   $heads     True if we want to include head and footer
      *
      * @return string $x509 Formatted cert
      */
-    public static function formatCert($cert, $heads = true)
+    public static function formatCert($x509cert, $heads = true)
     {
-        $x509cert = str_replace(array("\x0D", "\r", "\n"), "", $cert);
-        if (!empty($x509cert)) {
-            $x509cert = str_replace('-----BEGIN CERTIFICATE-----', "", $x509cert);
-            $x509cert = str_replace('-----END CERTIFICATE-----', "", $x509cert);
-            $x509cert = str_replace(' ', '', $x509cert);
-
-            if ($heads) {
-                $x509cert = "-----BEGIN CERTIFICATE-----\n".chunk_split($x509cert, 64, "\n")."-----END CERTIFICATE-----\n";
-            }
-
+        if (is_null($x509cert)) {
+          return;
         }
+
+        if (strpos($x509cert, '-----BEGIN CERTIFICATE-----') !== false) {
+            $x509cert = static::getStringBetween($x509cert, '-----BEGIN CERTIFICATE-----', '-----END CERTIFICATE-----');
+        }
+
+        $x509cert = str_replace(["\x0d", "\r", "\n", " "], '', $x509cert);
+
+        if ($heads && $x509cert !== '') {
+            $x509cert = "-----BEGIN CERTIFICATE-----\n".chunk_split($x509cert, 64, "\n")."-----END CERTIFICATE-----\n";
+        }
+
         return $x509cert;
     }
 
@@ -223,6 +246,10 @@ class Utils
      */
     public static function formatPrivateKey($key, $heads = true)
     {
+        if (is_null($key)) {
+          return;
+        }
+
         $key = str_replace(array("\x0D", "\r", "\n"), "", $key);
         if (!empty($key)) {
             if (strpos($key, '-----BEGIN PRIVATE KEY-----') !== false) {
@@ -282,6 +309,7 @@ class Utils
      * @param bool   $stay       True if we want to stay (returns the url string) False to redirect
      *
      * @return string|null $url
+     * @phpstan-return ($stay is true ? string : never)
      *
      * @throws Error
      */
@@ -297,7 +325,12 @@ class Utils
          * Verify that the URL matches the regex for the protocol.
          * By default this will check for http and https
          */
-        $wrongProtocol = !preg_match(self::$_protocolRegex, $url);
+        if (isset(self::$_protocolRegex)) {
+            $protocol = self::$_protocolRegex;
+        } else {
+            $protocol = "";
+        }
+        $wrongProtocol = !preg_match($protocol, $url);
         $url = filter_var($url, FILTER_VALIDATE_URL);
         if ($wrongProtocol || empty($url)) {
             throw new Error(
@@ -478,7 +511,7 @@ class Utils
         if (self::$_host) {
             $currentHost = self::$_host;
         } elseif (self::getProxyVars() && array_key_exists('HTTP_X_FORWARDED_HOST', $_SERVER)) {
-            $currentHost = $_SERVER['HTTP_X_FORWARDED_HOST'];
+            $currentHost = explode(',', $_SERVER['HTTP_X_FORWARDED_HOST'])[0];
         } elseif (array_key_exists('HTTP_HOST', $_SERVER)) {
             $currentHost = $_SERVER['HTTP_HOST'];
         } elseif (array_key_exists('SERVER_NAME', $_SERVER)) {
@@ -616,7 +649,7 @@ class Utils
         if (!empty($_SERVER['REQUEST_URI'])) {
             $route = $_SERVER['REQUEST_URI'];
             if (!empty($_SERVER['QUERY_STRING'])) {
-                $route = str_replace($_SERVER['QUERY_STRING'], '', $route);
+                $route = self::strLreplace($_SERVER['QUERY_STRING'], '', $route);
                 if (substr($route, -1) == '?') {
                     $route = substr($route, 0, -1);
                 }
@@ -629,7 +662,24 @@ class Utils
         }
 
         $selfRoutedURLNoQuery = $selfURLhost . $route;
+
+        $pos = strpos($selfRoutedURLNoQuery, "?");
+        if ($pos !== false) {
+            $selfRoutedURLNoQuery = substr($selfRoutedURLNoQuery, 0, $pos);
+        }
+
         return $selfRoutedURLNoQuery;
+    }
+
+    public static function strLreplace($search, $replace, $subject)
+    {
+        $pos = strrpos($subject, $search);
+
+        if ($pos !== false) {
+            $subject = substr_replace($subject, $replace, $pos, strlen($search));
+        }
+
+        return $subject;
     }
 
     /**
@@ -672,8 +722,13 @@ class Utils
         if (!empty($baseURLPath)) {
             $result = $baseURLPath;
             if (!empty($info)) {
-                $path = explode('/', $info);
-                $extractedInfo = array_pop($path);
+                $extractedInfo = $info;
+                if ($baseURLPath != '/') {
+                    // Remove base path from the path info.
+                    $extractedInfo = str_replace($baseURLPath, '', $info);
+                }
+                // Remove starting and ending slash.
+                $extractedInfo = trim($extractedInfo, '/');
                 if (!empty($extractedInfo)) {
                     $result .= $extractedInfo;
                 }
@@ -691,6 +746,10 @@ class Utils
      */
     public static function extractOriginalQueryParam($name)
     {
+        if (!isset($_SERVER['QUERY_STRING']) || empty($_SERVER['QUERY_STRING'])) {
+            return '';
+        }
+
         $index = strpos($_SERVER['QUERY_STRING'], $name.'=');
         $substring = substr($_SERVER['QUERY_STRING'], $index + strlen($name) + 1);
         $end = strpos($substring, '&');
@@ -734,6 +793,10 @@ class Utils
      */
     public static function parseSAML2Time($time)
     {
+        if (empty($time)) {
+          return null;
+        }
+
         $matches = array();
 
         /* We use a very strict regex to parse the timestamp. */
@@ -862,6 +925,7 @@ class Utils
      * @param string|int|null $validUntil    The valid until date, as a string or as a timestamp
      *
      * @return int|null $expireTime  The expiration time.
+     * @phpstan-return ($cacheDuration is true ? string : never)
      *
      * @throws Exception
      */
@@ -935,12 +999,12 @@ class Utils
      */
     public static function deleteLocalSession()
     {
-
         if (Utils::isSessionStarted()) {
+            session_unset();
             session_destroy();
+        } else {
+            $_SESSION = array();
         }
-
-        unset($_SESSION);
     }
 
     /**
@@ -971,7 +1035,10 @@ class Utils
                 if (strncmp($curData, '-----END CERTIFICATE', 20) == 0) {
                     break;
                 }
-                $data .= trim($curData);
+                if (isset($curData)) {
+                    $curData = trim($curData);
+                }
+                $data .= $curData;
             }
         }
 
@@ -1004,6 +1071,9 @@ class Utils
      */
     public static function formatFingerPrint($fingerprint)
     {
+        if (is_null($fingerprint)) {
+            return;
+        }
         $formatedFingerprint = str_replace(':', '', $fingerprint);
         $formatedFingerprint = strtolower($formatedFingerprint);
         return $formatedFingerprint;
@@ -1017,12 +1087,13 @@ class Utils
      * @param string|null $format SP Format
      * @param string|null $cert   IdP Public cert to encrypt the nameID
      * @param string|null $nq     IdP Name Qualifier
+     * @param string|null $encAlg Encryption algorithm
      *
      * @return string $nameIDElement DOMElement | XMLSec nameID
      *
      * @throws Exception
      */
-    public static function generateNameId($value, $spnq, $format = null, $cert = null, $nq = null)
+    public static function generateNameId($value, $spnq, $format = null, $cert = null, $nq = null, $encAlg = XMLSecurityKey::AES128_CBC)
     {
 
         $doc = new DOMDocument();
@@ -1042,14 +1113,18 @@ class Utils
         $doc->appendChild($nameId);
 
         if (!empty($cert)) {
-            $seckey = new XMLSecurityKey(XMLSecurityKey::RSA_1_5, array('type'=>'public'));
+            if ($encAlg == XMLSecurityKey::AES128_CBC) {
+                $seckey = new XMLSecurityKey(XMLSecurityKey::RSA_1_5, array('type'=>'public'));
+            } else {
+                $seckey = new XMLSecurityKey(XMLSecurityKey::RSA_OAEP_MGF1P, array('type'=>'public'));
+            }
             $seckey->loadKey($cert);
 
             $enc = new XMLSecEnc();
             $enc->setNode($nameId);
             $enc->type = XMLSecEnc::Element;
 
-            $symmetricKey = new XMLSecurityKey(XMLSecurityKey::AES128_CBC);
+            $symmetricKey = new XMLSecurityKey($encAlg);
             $symmetricKey->generateSessionKey();
             $enc->encryptKey($seckey, $symmetricKey);
 
@@ -1361,7 +1436,7 @@ class Utils
      * Validates a signature (Message or Assertion).
      *
      * @param string|\DomNode   $xml            The element we should validate
-     * @param string|null       $cert           The pubic cert
+     * @param string|null       $cert           The public cert
      * @param string|null       $fingerprint    The fingerprint of the public cert
      * @param string|null       $fingerprintalg The algorithm used to get the fingerprint
      * @param string|null       $xpath          The xpath of the signed element
@@ -1473,13 +1548,43 @@ class Utils
             $signAlg = $getData['SigAlg'];
         }
 
+
         if ($retrieveParametersFromServer) {
+            if (!isset($_SERVER['QUERY_STRING']) || empty($_SERVER['QUERY_STRING'])) {
+                throw new Error(
+                    "No query string provided",
+                    Error::INVALID_PARAMETER
+                );
+            }
+            $keys = ["SAMLRequest", "SAMLResponse", "RelayState", "SigAlg", "Signature"];
+            foreach ($keys as $key) {
+                if (substr_count($_SERVER['QUERY_STRING'], $key) > 1) {
+                    throw new Error(
+                        "Duplicate parameter in query string",
+                        Error::INVALID_PARAMETER
+                    );
+                }
+            }
+            if (substr_count($_SERVER['QUERY_STRING'], "SAMLRequest") > 0 && substr_count($_SERVER['QUERY_STRING'], "SAMLResponse") > 0) {
+                throw new Error(
+                    "Both SAMLRequest and SAMLResponse provided",
+                    Error::INVALID_PARAMETER
+                );
+            }
+
             $signedQuery = $messageType.'='.Utils::extractOriginalQueryParam($messageType);
             if (isset($getData['RelayState'])) {
                 $signedQuery .= '&RelayState='.Utils::extractOriginalQueryParam('RelayState');
             }
             $signedQuery .= '&SigAlg='.Utils::extractOriginalQueryParam('SigAlg');
         } else {
+            if (isset($getData['SAMLRequest']) && isset($getData['SAMLResponse'])) {
+                throw new Error(
+                    "Both SAMLRequest and SAMLResponse provided",
+                    Error::INVALID_PARAMETER
+                );
+            }
+
             $signedQuery = $messageType.'='.urlencode($getData[$messageType]);
             if (isset($getData['RelayState'])) {
                 $signedQuery .= '&RelayState='.urlencode($getData['RelayState']);
@@ -1516,7 +1621,7 @@ class Utils
                     $objKey = Utils::castKey($objKey, $signAlg, 'public');
                 } catch (Exception $e) {
                     $ex = new ValidationError(
-                        "Invalid signAlg in the recieved ".$strMessageType,
+                        "Invalid signAlg in the received ".$strMessageType,
                         ValidationError::INVALID_SIGNATURE
                     );
                     if (count($multiCerts) == 1) {
@@ -1525,7 +1630,7 @@ class Utils
                 }
             }
 
-            if ($objKey->verifySignature($signedQuery, base64_decode($_GET['Signature'])) === 1) {
+            if ($objKey->verifySignature($signedQuery, base64_decode($getData['Signature'])) === 1) {
                 $signatureValid = true;
                 break;
             }

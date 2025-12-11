@@ -2,17 +2,14 @@
 /**
  * This file is part of php-saml.
  *
- * (c) OneLogin Inc
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
  * @package OneLogin
- * @author  OneLogin Inc <saml-info@onelogin.com>
- * @license MIT https://github.com/onelogin/php-saml/blob/master/LICENSE
- * @link    https://github.com/onelogin/php-saml
+ * @author  Sixto Martin <sixto.martin.garcia@gmail.com>
+ * @license MIT https://github.com/SAML-Toolkits/php-saml/blob/master/LICENSE
+ * @link    https://github.com/SAML-Toolkits/php-saml
  */
-
 namespace OneLogin\Saml2;
 
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -104,7 +101,7 @@ class LogoutRequest
                 $nameIdFormat = Constants::NAMEID_ENTITY;
             }
 
-            /* From saml-core-2.0-os 8.3.6, when the entity Format is used: 
+            /* From saml-core-2.0-os 8.3.6, when the entity Format is used:
                "The NameQualifier, SPNameQualifier, and SPProvidedID attributes MUST be omitted.
             */
             if (!empty($nameIdFormat) && $nameIdFormat == Constants::NAMEID_ENTITY) {
@@ -122,12 +119,14 @@ class LogoutRequest
                 $nameIdSPNameQualifier,
                 $nameIdFormat,
                 $cert,
-                $nameIdNameQualifier
+                $nameIdNameQualifier,
+                $security['encryption_algorithm']
             );
 
             $sessionIndexStr = isset($sessionIndex) ? "<samlp:SessionIndex>{$sessionIndex}</samlp:SessionIndex>" : "";
 
             $spEntityId = htmlspecialchars($spData['entityId'], ENT_QUOTES);
+            $destination = $this->_settings->getIdPSLOUrl();
             $logoutRequest = <<<LOGOUTREQUEST
 <samlp:LogoutRequest
     xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
@@ -135,7 +134,7 @@ class LogoutRequest
     ID="{$id}"
     Version="2.0"
     IssueInstant="{$issueInstant}"
-    Destination="{$idpData['singleLogoutService']['url']}">
+    Destination="{$destination}">
     <saml:Issuer>{$spEntityId}</saml:Issuer>
     {$nameIdObj}
     {$sessionIndexStr}
@@ -156,7 +155,7 @@ LOGOUTREQUEST;
     }
 
     /**
-     * Returns the Logout Request defated, base64encoded, unsigned
+     * Returns the Logout Request deflated, base64encoded, unsigned
      *
      * @param bool|null $deflate Whether or not we should 'gzdeflate' the request body before we return it.
      *
@@ -184,7 +183,7 @@ LOGOUTREQUEST;
      *
      * @return string ID
      *
-     * @throws OneLogin_Saml2_Error
+     * @throws Error
      */
     public static function getID($request)
     {
@@ -278,7 +277,7 @@ LOGOUTREQUEST;
      * @param string|null        $key     The SP key
      *
      * @return string Name ID Value
-     * 
+     *
      * @throws Error
      * @throws Exception
      * @throws ValidationError
@@ -295,7 +294,7 @@ LOGOUTREQUEST;
      * @param string|DOMDocument $request Logout Request Message
      *
      * @return string|null $issuer The Issuer
-     * 
+     *
      * @throws Exception
      */
     public static function getIssuer($request)
@@ -324,7 +323,7 @@ LOGOUTREQUEST;
      * @param string|DOMDocument $request Logout Request Message
      *
      * @return array The SessionIndex value
-     * 
+     *
      * @throws Exception
      */
     public static function getSessionIndexes($request)
@@ -345,12 +344,12 @@ LOGOUTREQUEST;
     }
 
     /**
-     * Checks if the Logout Request recieved is valid.
+     * Checks if the Logout Request received is valid.
      *
      * @param bool $retrieveParametersFromServer True if we want to use parameters from $_SERVER to validate the signature
      *
      * @return bool If the Logout Request is or not valid
-     * 
+     *
      * @throws Exception
      * @throws ValidationError
      */
@@ -368,7 +367,7 @@ LOGOUTREQUEST;
                 $security = $this->_settings->getSecurityData();
 
                 if ($security['wantXMLValidation']) {
-                    $res = Utils::validateXML($dom, 'saml-schema-protocol-2.0.xsd', $this->_settings->isDebugActive());
+                    $res = Utils::validateXML($dom, 'saml-schema-protocol-2.0.xsd', $this->_settings->isDebugActive(), $this->_settings->getSchemasPath());
                     if (!$res instanceof DOMDocument) {
                         throw new ValidationError(
                             "Invalid SAML Logout Request. Not match the saml-schema-protocol-2.0.xsd",
@@ -393,11 +392,25 @@ LOGOUTREQUEST;
                 // Check destination
                 if ($dom->documentElement->hasAttribute('Destination')) {
                     $destination = $dom->documentElement->getAttribute('Destination');
-                    if (!empty($destination) && strpos($destination, $currentURL) === false) {
-                        throw new ValidationError(
-                            "The LogoutRequest was received at $currentURL instead of $destination",
-                            ValidationError::WRONG_DESTINATION
-                        );
+                    if (empty($destination)) {
+                        if (!$security['relaxDestinationValidation']) {
+                            throw new ValidationError(
+                                "The LogoutRequest has an empty Destination value",
+                                ValidationError::EMPTY_DESTINATION
+                            );
+                        }
+                    } else {
+                        $urlComparisonLength = $security['destinationStrictlyMatches'] ? strlen($destination) : strlen($currentURL);
+                        if (strncmp($destination, $currentURL, $urlComparisonLength) !== 0) {
+                            $currentURLNoRouted = Utils::getSelfURLNoQuery();
+                            $urlComparisonLength = $security['destinationStrictlyMatches'] ? strlen($destination) : strlen($currentURLNoRouted);
+                            if (strncmp($destination, $currentURLNoRouted, $urlComparisonLength) !== 0) {
+                                throw new ValidationError(
+                                    "The LogoutRequest was received at $currentURL instead of $destination",
+                                    ValidationError::WRONG_DESTINATION
+                                );
+                            }
+                        }
                     }
                 }
 

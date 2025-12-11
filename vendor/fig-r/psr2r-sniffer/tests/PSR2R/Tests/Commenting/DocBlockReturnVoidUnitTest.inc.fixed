@@ -1,0 +1,42 @@
+<?php
+
+namespace PSR2R\Tests\Commenting;
+
+class DocBlockReturnVoidUnitTestInc {
+	/**
+	 * DocBlockReturnVoidUnitTestInc constructor.
+	 * 
+	 */
+	public function __construct() {
+
+	}
+
+	/**
+	 * 
+	 */
+	public function __destruct() {
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function one() {
+		return true;
+	}
+
+	/**
+	 * @return void
+	 */
+	public function two() {
+
+	}
+
+	/**
+	 * Three
+	 * @return void
+	 */
+	public function three() {
+
+	}
+}

@@ -1,0 +1,21 @@
+<?php
+
+namespace PSR2R\Tests\WhiteSpace;
+
+/**
+ * Class MethodSpacingUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\WhiteSpace
+ */
+class MethodSpacingUnitTestInc {
+	public function one () {
+
+	}
+	public function two () {
+
+		$a = 1;
+
+	}
+}

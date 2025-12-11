@@ -1,0 +1,27 @@
+<?php
+
+namespace PSR2R\Tests\PHP;
+
+/**
+ * Class NoIsNullUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\PHP
+ */
+class NoIsNullUnitTestInc {
+	public function one() {
+		$a = null;
+		$b = $a === null;
+		$c = $b === null ? 'Null' : '';
+		if ($b === null) {
+			$c = 'Null';
+		}
+		if (!!is_null($b)) {
+			$c = 'Null';
+		}
+		if ($c = is_null($b = $g)) {
+			$d = 'Yuck';
+		}
+	}
+}

@@ -1,0 +1,42 @@
+<?php
+
+namespace PSR2R\Tests\WhiteSpace;
+
+use PSR2R\Base\AbstractBase;
+
+/**
+ * Class DocBlockAlignmentUnitTest
+ *
+ * @author  Ed Barnard
+ * @license MIT
+ * @package PSR2R\Tests\WhiteSpace
+ */
+class DocBlockAlignmentUnitTestInc {
+	/**
+	 *
+	 */
+	public function one() {
+		/**
+		 * Stuff
+		 */
+		$a = 1;
+	/** a */
+	$b = 2;
+	/**
+	 * c
+	 */
+	$c = 3;
+		/**
+		 *
+		 */
+		$d = 4;
+		/**
+		 * e
+		 */
+		$e = 5;
+			/**
+			 * f
+			 */
+			$f = 6;
+	}
+}

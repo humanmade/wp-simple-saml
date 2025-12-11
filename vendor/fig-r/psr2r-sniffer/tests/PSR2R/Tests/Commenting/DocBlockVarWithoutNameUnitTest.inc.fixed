@@ -1,0 +1,10 @@
+<?php
+
+namespace PSR2R\Tests\Commenting;
+
+class DocBlockVarWithoutNameUnitTestInc {
+	/** @var array */
+	private $a = [];
+	/** @var int */
+	private $b;
+}
