@@ -8,7 +8,7 @@ Author URI: http://hmn.md
 Text Domain: wp-simple-saml
 Domain Path: /language/
 
-Copyright 2017-2025 Human Made
+Copyright 2017-2026 Human Made
 
 GNU General Public License, Free Software Foundation <http://creativecommons.org/licenses/GPL/2.0/>
 
