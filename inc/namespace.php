@@ -374,11 +374,26 @@ function process_response() {
 		}
 	}
 
-	if ( ! empty( $saml->getErrors() ) ) {
-		$errors = implode( ', ', $saml->getErrors() );
+	$errors = $saml->getErrors();
+	if ( ! empty( $errors ) ) {
+		// Special-case: if we have a single error, use the error message directly.
+		if ( count( $errors ) === 1 ) {
+			$message = sprintf(
+				/* translators: %1$s = error code, %2$s = error reason */
+				esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%1$s" ("%2$s")', 'wp-simple-saml' ),
+				$errors[0],
+				$saml->getLastErrorReason()
+			);
+		} else {
+			$errors = implode( ', ', $saml->getErrors() );
+			$message = sprintf(
+				/* translators: %s = error message */
+				esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ),
+				esc_html( $errors )
+			);
+		}
 
-		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) ) );
+		return new \WP_Error( 'invalid-saml', $message );
 	}
 
 	if ( ! $saml->isAuthenticated() ) {
