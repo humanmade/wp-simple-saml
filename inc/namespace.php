@@ -810,27 +810,21 @@ function get_user_roles_from_sso( \WP_User $user, array $attributes ) {
 	$roles = (array) apply_filters( 'wpsimplesaml_map_role', get_option( 'default_role' ), $attributes, $user->ID, $user );
 	$roles = array_unique( array_filter( $roles ) );
 
-	if ( empty( $roles ) ) {
-		return [];
-	}
-
 	if ( is_sso_enabled_network_wide() ) {
-		$network_roles = [];
-
 		// If this is a multisite, the roles array may contain a 'network' key and a 'sites' key. Otherwise, if
 		// it is a flat array, use it to add the roles for all sites
 		if ( is_numeric( key( $roles ) ) ) { // Not an associative array ?
 			if ( is_array( current( $roles ) ) ) {
 				// Nested array? then it is a `sites` definition, expect array of roles for each site
-				$network_roles['sites'] = $roles;
+				$roles = [ 'sites' => $roles ];
 			} else {
 				// Flat array of strings ? then expect it is roles to apply on all sites
-				$network_roles['network'] = $roles;
+				$roles = [ 'network' => $roles ];
 			}
 		} elseif ( ! isset( $roles['network'] ) && ! isset( $roles['sites'] ) ) { // Associative but no 'network' or 'sites' keys ?
-			$network_roles = [];
+			$roles = [];
 		}
 	}
 
-	return $network_roles ?? (array) $roles;
+	return $roles;
 }
