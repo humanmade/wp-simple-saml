@@ -562,7 +562,7 @@ function map_user_roles( $user, array $attributes ) {
 	// Manage super admin flag
 	if ( is_sso_enabled_network_wide() ) {
 		if ( isset( $roles['network'] ) && in_array( 'superadmin', $roles['network'], true ) ) {
-			$roles = array_diff( $roles['network'], [ 'superadmin' ] );
+			$roles['network'] = array_diff( $roles['network'], [ 'superadmin' ] );
 
 			if ( ! is_super_admin( $user->ID ) ) {
 				grant_super_admin( $user->ID );
@@ -585,13 +585,15 @@ function map_user_roles( $user, array $attributes ) {
 
 			// Add the user to the defined sites, and assign proper role(s)
 			foreach ( $roles['sites'] as $site_id => $site_roles ) {
-				switch_to_blog( $site_id );
-				$user->for_site( $site_id );
-				$user->set_role( reset( $site_roles ) );
+				switch_to_blog( (int) $site_id );
+				$user->for_site( (int) $site_id );
+				add_user_to_blog( (int) $site_id, $user->ID, reset( $site_roles ) );
 
 				foreach ( array_slice( $site_roles, 1 ) as $role ) {
 					$user->add_role( $role );
 				}
+
+				restore_current_blog();
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
 			$all_site_ids = new \WP_Site_Query( [
@@ -601,13 +603,15 @@ function map_user_roles( $user, array $attributes ) {
 			] );
 
 			foreach ( $all_site_ids->sites as $site_id ) {
-				switch_to_blog( $site_id );
-				$user->for_site( $site_id );
-				$user->set_role( reset( $roles['network'] ) );
+				switch_to_blog( (int) $site_id );
+				$user->for_site( (int) $site_id );
+				add_user_to_blog( (int) $site_id, $user->ID, reset( $roles['network'] ) );
 
 				foreach ( array_slice( $roles['network'], 1 ) as $role ) {
 					$user->add_role( $role );
 				}
+
+				restore_current_blog();
 			}
 		}
 	} else {
