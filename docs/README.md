@@ -81,16 +81,6 @@ add_filter( 'wpsimplesaml_attribute_mapping', function(){
 
 ### Testing
 
-> **TL;DR**
-
-```
-# Make sure you have Docker installed, then run:
-npm install
-npm run dev
-```
-
-## Contribute
-
 **TL;DR**
 
 ```bash
@@ -98,6 +88,8 @@ npm run dev
 npm install
 npm run dev
 ```
+
+This plugin can be tested or developed within any local WordPress environment.
 
 For convenience, you can use `@wordpress/env`, a local WordPress server can run by executing `npm run dev`: this command will start a local server at http://localhost:8888/ (requires Docker).
 
@@ -126,13 +118,7 @@ This installs Human made's version of WordPress Coding Standards via PHP Code Sn
 
 ### Contribution Guidelines
 
-## Credits
 
-Created by <a href="https://hmn.md/"><img src="https://humanmade.com/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" alt="Human Made" /></a>
-
-Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
-
-=======
 
 ## Changelog
 
