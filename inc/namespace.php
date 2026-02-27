@@ -294,6 +294,8 @@ function get_metadata() {
 	try {
 		$metadata = $settings->getSPMetadata();
 		$errors   = $settings->validateMetadata( $metadata );
+	} catch ( \Throwable $e ) {
+		$errors = $e->getMessage();
 	} catch ( \Exception $e ) {
 		$errors = $e->getMessage();
 	}
@@ -360,6 +362,9 @@ function process_response() {
 
 		}
 		$saml->processResponse();
+	} catch ( \Throwable $e ) {
+		/* translators: %s = error message */
+		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
 		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
@@ -369,11 +374,26 @@ function process_response() {
 		}
 	}
 
-	if ( ! empty( $saml->getErrors() ) ) {
-		$errors = implode( ', ', $saml->getErrors() );
+	$errors = $saml->getErrors();
+	if ( ! empty( $errors ) ) {
+		// Special-case: if we have a single error, use the error message directly.
+		if ( count( $errors ) === 1 ) {
+			$message = sprintf(
+				/* translators: %1$s = error code, %2$s = error reason */
+				esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%1$s" ("%2$s")', 'wp-simple-saml' ),
+				$errors[0],
+				$saml->getLastErrorReason()
+			);
+		} else {
+			$errors = implode( ', ', $saml->getErrors() );
+			$message = sprintf(
+				/* translators: %s = error message */
+				esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ),
+				esc_html( $errors )
+			);
+		}
 
-		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $errors ) ) );
+		return new \WP_Error( 'invalid-saml', $message );
 	}
 
 	if ( ! $saml->isAuthenticated() ) {
@@ -409,12 +429,13 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 	$map        = get_attribute_map();
 	$attributes = $saml->getAttributes();
+	$name_id    = $saml->getNameId();
 
 	// Check whether email is the unique identifier set in SAML IDP
 	$is_email_auth = 'emailAddress' === substr( $saml->getNameIdFormat(), - strlen( 'emailAddress' ) );
 
 	if ( $is_email_auth ) {
-		$email = filter_var( $saml->getNameId(), FILTER_VALIDATE_EMAIL );
+		$email = filter_var( $name_id, FILTER_VALIDATE_EMAIL );
 	} else {
 		$email_field = $map['user_email'];
 		$email       = current( (array) $saml->getAttribute( $email_field ) );
@@ -425,10 +446,11 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	 *
 	 * @param string $email      Email from SAMLResponse
 	 * @param array  $attributes SAML Attributes parsed from SAMLResponse
+	 * @param string $name_id    Name ID from SAMLResponse
 	 *
 	 * @return null|false|\WP_User User object or false if not found
 	 */
-	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes );
+	$user = apply_filters( 'wpsimplesaml_match_user', null, $email, $attributes, $name_id );
 
 	if ( null === $user ) {
 		$user = get_user_by( 'email', $email );
@@ -442,7 +464,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
 		$user_data = [
 			'ID'            => null,
-			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $saml->getNameId(),
+			'user_login'    => isset( $map['user_login'], $attributes[ $map['user_login'] ] ) ? $attributes[ $map['user_login'] ][0] : $name_id,
 			'user_pass'     => wp_generate_password(),
 			'user_nicename' => implode( ' ', array_filter( [ $first_name, $last_name ] ) ),
 			'first_name'    => $first_name,
@@ -573,7 +595,7 @@ function map_user_roles( $user, array $attributes ) {
 			}
 		} elseif ( ! isset( $roles['sites'] ) && isset( $roles['network'] ) ) {
 			$all_site_ids = new \WP_Site_Query( [
-				'network' => get_network()->id,
+				'network' => get_current_network_id(),
 				'fields'  => 'ids',
 				'number'  => 999,
 			] );
@@ -645,12 +667,10 @@ function cross_site_sso_redirect( $url ) {
 		$sso_url = trailingslashit( $url ) . 'sso/verify';
 	} else {
 		// If we hit a protected page, OR a subsite, log to the main site / root, then redirect to that page/subsite
-		// This doesn't work with protected pages in a sub-directory installs, ie anything outside of wp-admin there
-		// as we cannot detect the site home URL!
-		$sso_url = str_replace( $path, '/sso/verify', $url );
+		$sso_url = get_site_url( get_blog_id( $url ), '/sso/verify' );
 	}
 
-	$sso_url = add_query_arg( 'redirect_to', $url, $sso_url );
+	$sso_url = add_query_arg( 'redirect_to', urlencode( $url ), $sso_url );
 
 	?>
 
@@ -665,15 +685,14 @@ function cross_site_sso_redirect( $url ) {
 		do_action( 'wpsimplesaml_cross_sso_form_inputs' );
 		?>
 	</form>
-	<?php // @codingStandardsIgnoreEnd ?>
-
-	<script>
-		setTimeout( function () {
-			document.getElementById( 'sso_form' ).submit();
-		}, 100 );
-	</script>
-
-	<?php
+	<?php 
+	wp_enqueue_script(
+		'wp-simple-saml-csr',
+		plugins_url( '/assets/csr.js', PLUGIN_FILE ),
+		[],
+		null
+	);
+	print_footer_scripts();
 	exit;
 }
 
@@ -694,7 +713,7 @@ function get_blog_id( $url ) {
 		return 0;
 	}
 
-	$site = get_site_by_path( $fragments['host'], $fragments['path'] );
+	$site = get_site_by_path( $fragments['host'], $fragments['path'] ?? '' );
 
 	$blog_id = 0;
 	if ( $site ) {
