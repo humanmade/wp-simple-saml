@@ -86,9 +86,18 @@ add_filter( 'wpsimplesaml_attribute_mapping', function(){
 
 ## Testing
 
+This plugin can be tested or developed within any local WordPress environment. For convenience, a local WordPress server can also be run by executing `npm run dev`: this command will start a local server at http://localhost:8888/ (requires Docker). Run `npm run wp-env stop` to shut down the server when finished.
+
 As SSO authorities are usually a pain to change, and credentials take time to be configured, we've documented steps to get a sample SAML IdP ( Identity provider ) up and running using a test docker container. See more at [Testing SSO Locally](https://github.com/humanmade/wp-simple-saml/wiki/Testing-SSO-locally). 
 
 ## Contribute
+**TL;DR**
+
+```bash
+# Make sure you have Docker installed, then run:
+npm install
+npm run dev
+```
 
 First, thanks for contributing!
 
@@ -123,17 +132,23 @@ Written and maintained by [Shady Sharaf](https://github.com/shadyvb). Thanks to 
 
 Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)
 
+
 ## Changelog
 
-- 0.3
-  - Fix compatibilty with WordPress single site (no multisite).
-  - Fix error caused by using WordPress dashboard function outside the dashboard.
+-   0.3
+    -   Fix compatibilty with WordPress single site (no multisite).
+    -   Fix error caused by using WordPress dashboard function outside the dashboard.
+-   0.2.1
+    -   Fix missing composer dependency and updated .gitignore
+-   0.2
+    -   Updating PHP SAML library to 3.0 to support PHP 7.x
+-   0.1
+    -   Stable version
 
-- 0.2.1
-  - Fix missing composer dependency and updated .gitignore
+## Credits
 
-- 0.2
-  - Updating PHP SAML library to 3.0 to support PHP 7.x
+Created by <a href="https://hmn.md/"><img src="https://humanmade.com/content/themes/hmnmd/assets/images/hm-logo.svg" width="100" alt="Human Made" /></a>
 
-- 0.1
-  - Stable version
+Thanks to all our [contributors](https://github.com/humanmade/wp-simple-saml/graphs/contributors).
+
+Interested in joining in on the fun? [Join us, and become human!](https://hmn.md/is/hiring/)

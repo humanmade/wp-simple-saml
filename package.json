@@ -3,8 +3,12 @@
   "version": "0.1.0",
   "description": "WordPress plugin for integration with SAML SSO",
   "scripts": {
+    "wp-env": "wp-env",
+    "dev": "wp-env start && npm run idp",
+    "stop": "wp-env stop && docker stop idp",
     "cs": "vendor/bin/phpcs --standard=./vendor/humanmade/coding-standards/ruleset.xml .",
-    "precommit": "npm run cs"
+    "precommit": "npm run cs",
+    "idp": "docker start idp || docker run --name=idp -p 8080:8080 -e SIMPLESAMLPHP_SP_ENTITY_ID=http://localhost:8888/ -e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost:8888/sso/verify -e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost:8888/sso/logout -d kenchan0130/simplesamlphp"
   },
   "repository": {
     "type": "git",
@@ -22,6 +26,7 @@
   },
   "homepage": "https://github.com/humanmade/wp-simple-saml#readme",
   "devDependencies": {
-    "husky": "^0.14.3"
+    "@wordpress/env": "^10.16.0",
+    "husky": "^9.1.7"
   }
 }

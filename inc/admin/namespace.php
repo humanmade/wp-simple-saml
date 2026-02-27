@@ -57,6 +57,10 @@ function get_config() {
 			$idp_xml  = trim( apply_filters( 'wpsimplesaml_idp_metadata_xml', '' ) );
 			$settings = IdPMetadataParser::parseXML( $idp_xml );
 		}
+	} catch ( \Throwable $e ) {
+		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
+			'errors' => $e->getMessage(),
+		] );
 	} catch ( \Exception $e ) {
 		return new \WP_Error( 'invalid-idp-metadata', __( 'Invalid IdP XML metadata', 'wp-simple-saml' ), [
 			'errors' => $e->getMessage(),
@@ -130,7 +134,7 @@ function get_sso_settings( $option = null ) {
 	$options = [
 		'sso_enabled'           => '',
 		'sso_debug'             => 0,
-		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' ),
+		'sso_sp_base'           => is_sso_enabled_network_wide() ? get_home_url( get_main_site_id(), '/' ) : home_url( '/' ),
 		'sso_login_name'        => 'SSO Login',
 		'sso_role_management'   => '',
 		'sso_whitelisted_hosts' => '',
@@ -201,7 +205,7 @@ function settings_fields() {
 	register_setting( $settings_section, 'sso_sp_base', 'sanitize_url' );
 	add_settings_field( 'sso_sp_base', __( 'SSO Base URL', 'wp-simple-saml' ), function () use ( $options ) {
 		$value   = $options['sso_sp_base'];
-		$default = is_sso_enabled_network_wide() ? get_home_url( get_network()->site_id, '/' ) : home_url( '/' );
+		$default = is_sso_enabled_network_wide() ? get_home_url( get_main_site_id(), '/' ) : home_url( '/' );
 		?>
 		<input type="text" name="sso_sp_base" id="sso_sp_base" value="<?php echo esc_url_raw( $value ); ?>" placeholder="<?php echo esc_url_raw( $default ); ?>">
 		<?php
