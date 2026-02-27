@@ -51,13 +51,15 @@ Depending on whether the plugin is network-activated or not, you will need to go
 - `SSO Status`
 is how the plugin integrates with WordPress login process, available options are `Disable`, `Display login link` which only provides a link in the login form, `Force redirect` which overrides the login form altogether and directly goes to SSO login page.
 - `SSO Base URL` (optional)
-is the home URL of the WordPress site that serves as the delegate ( main service provider ) to which SAML responses will be posted, usually this is the main site of the network, and is the same value for `siteurl` option, eg `https://my.site/`
+is the home URL of the WordPress site that serves as the delegate ( main service provider ) to which SAML responses will be posted, usually this is the main site of the network, and is the same value for `siteurl` option, eg `https://my.site/`.
 - `SSO IdP Metadata` (required, if not filtered)
 Copy of the SSO IdP metadata XML file, which can also be passed via either `wpsimplesaml_idp_metadata_xml_path` for a path to the XML file, or `wpsimplesaml_idp_metadata_xml` for the contents of the XML, or `wpsimplesaml_idp_metadata` for the configuration array.
+- `SSO Create user if it does not exists`
+Controls if new accounts will be created if they don't exist already.
 - `SSO delegation whitelisted hosts`
-List of hosts to whitelist during delegation of SAML responses, ie: secondary domains that needs to use SSO as well from the same IdP. Local sites are allowed by default.  
+List of hosts to whitelist during delegation of SAML responses, ie: secondary domains that needs to use SSO as well from the same IdP. Local sites are allowed by default.
 - `SSO Role Management`
-Enables developers to assign different roles to users based on SAML Responses, disabled by default, and is controlled via a few filters,  
+Enables developers to assign different roles to users based on SAML Responses, disabled by default, and is controlled via a few filters.
 - `SSO Debug via Cookies`
 Allows developers to use a special cookie named `sso_debug` to override the `SSO Status` option during testing. Possible value of the cookie are `force` and `link`, which are self-explanatory.
 - `SSO Config validation`
