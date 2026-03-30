@@ -124,9 +124,15 @@ function login_form_link() {
 	/**
 	 * Filters whether we should show the SSO login link in login form
 	 *
-	 * @return bool  Forces SSO authentication if true, defaults to True
+	 * @return bool  Show the SSO login link if true. Defaults to settings.
 	 */
-	if ( ! apply_filters( 'wpsimplesaml_log_in_link', true ) ) {
+	$show_link = 'link' === Admin\get_sso_settings( 'sso_enabled' );
+
+	if ( Admin\get_sso_settings( 'sso_debug' ) && isset( $_COOKIE['sso_debug'] ) ) {
+		$show_link = 'link' === wp_unslash( $_COOKIE['sso_debug'] );
+	}
+
+	if ( ! apply_filters( 'wpsimplesaml_log_in_link', $show_link ) ) {
 		return;
 	}
 
