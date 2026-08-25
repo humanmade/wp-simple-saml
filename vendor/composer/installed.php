@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => 'humanmade/wp-simple-saml',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => 'f7152cb1af76a56b422964450c30d6da085b7e0d',
+        'type' => 'wordpress-plugin',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => false,
+    ),
+    'versions' => array(
+        'humanmade/wp-simple-saml' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => 'f7152cb1af76a56b422964450c30d6da085b7e0d',
+            'type' => 'wordpress-plugin',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'onelogin/php-saml' => array(
+            'pretty_version' => '3.8.2',
+            'version' => '3.8.2.0',
+            'reference' => '8732729ea91d1764a8d39062647845bba4bb3c29',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../onelogin/php-saml',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'robrichards/xmlseclibs' => array(
+            'pretty_version' => '3.1.5',
+            'version' => '3.1.5.0',
+            'reference' => '03062be78178cbb5e8f605cd255dc32a14981f92',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../robrichards/xmlseclibs',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);
