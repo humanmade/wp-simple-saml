@@ -2,15 +2,13 @@
 /**
  * This file is part of php-saml.
  *
- * (c) OneLogin Inc
- *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
  * @package OneLogin
- * @author  OneLogin Inc <saml-info@onelogin.com>
- * @license MIT https://github.com/onelogin/php-saml/blob/master/LICENSE
- * @link    https://github.com/onelogin/php-saml
+ * @author  Sixto Martin <sixto.martin.garcia@gmail.com>
+ * @license MIT https://github.com/SAML-Toolkits/php-saml/blob/master/LICENSE
+ * @link    https://github.com/SAML-Toolkits/php-saml
  */
 
 namespace OneLogin\Saml2;
@@ -19,12 +17,16 @@ use DOMDocument;
 use Exception;
 
 /**
- * IdP Metadata Parser of OneLogin PHP Toolkit
+ * IdP Metadata Parser of SAML PHP Toolkit
  */
 class IdPMetadataParser
 {
     /**
      * Get IdP Metadata Info from URL
+     *
+     * This class does not validate in any way the URL that is introduced,
+     * make sure to validate it properly before use it in the parseRemoteXML
+     * method in order to avoid security issues like SSRF attacks.
      *
      * @param string $url                 URL where the IdP metadata is published
      * @param string $entityId            Entity Id of the desired IdP, if no
@@ -34,19 +36,23 @@ class IdPMetadataParser
      * @param string $desiredNameIdFormat If available on IdP metadata, use that nameIdFormat
      * @param string $desiredSSOBinding   Parse specific binding SSO endpoint
      * @param string $desiredSLOBinding   Parse specific binding SLO endpoint
+     * @param bool   $validatePeer        Enable or disable validate peer SSL certificate
      *
      * @return array metadata info in php-saml settings format
      */
-    public static function parseRemoteXML($url, $entityId = null, $desiredNameIdFormat = null, $desiredSSOBinding = Constants::BINDING_HTTP_REDIRECT, $desiredSLOBinding = Constants::BINDING_HTTP_REDIRECT)
+    public static function parseRemoteXML($url, $entityId = null, $desiredNameIdFormat = null, $desiredSSOBinding = Constants::BINDING_HTTP_REDIRECT, $desiredSLOBinding = Constants::BINDING_HTTP_REDIRECT, $validatePeer = false)
     {
         $metadataInfo = array();
 
         try {
             $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS | CURLPROTO_HTTP);
+            curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTPS  | CURLPROTO_HTTP);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $validatePeer);
             curl_setopt($ch, CURLOPT_FAILONERROR, 1);
 
             $xml = curl_exec($ch);
@@ -56,6 +62,7 @@ class IdPMetadataParser
                 throw new Exception(curl_error($ch), curl_errno($ch));
             }
         } catch (Exception $e) {
+            throw new Exception('Error on parseRemoteXML. '.$e->getMessage());
         }
         return $metadataInfo;
     }
@@ -84,6 +91,7 @@ class IdPMetadataParser
                 $metadataInfo = self::parseXML($data, $entityId, $desiredNameIdFormat, $desiredSSOBinding, $desiredSLOBinding);
             }
         } catch (Exception $e) {
+            throw new Exception('Error on parseFileXML. '.$e->getMessage());
         }
         return $metadataInfo;
     }
@@ -158,6 +166,10 @@ class IdPMetadataParser
                         'url' => $sloNodes->item(0)->getAttribute('Location'),
                         'binding' => $sloNodes->item(0)->getAttribute('Binding')
                     );
+
+                    if ($sloNodes->item(0)->hasAttribute('ResponseLocation')) {
+                        $metadataInfo['idp']['singleLogoutService']['responseUrl'] = $sloNodes->item(0)->getAttribute('ResponseLocation');
+                    }
                 }
 
                 $keyDescriptorCertSigningNodes = Utils::query($dom, './md:KeyDescriptor[not(contains(@use, "encryption"))]/ds:KeyInfo/ds:X509Data/ds:X509Certificate', $idpDescriptor);
