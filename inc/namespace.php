@@ -415,7 +415,60 @@ function get_sso_user() {
 		return $saml;
 	}
 
+	$replay_check = prevent_assertion_replay( $saml );
+	if ( is_wp_error( $replay_check ) ) {
+		return $replay_check;
+	}
+
 	return get_or_create_wp_user( $saml );
+}
+
+/**
+ * Claim a validated assertion before provisioning or signing in a user.
+ *
+ * Records are deliberately permanent: without strict timestamp validation,
+ * deleting a record would allow an expired assertion to be accepted again.
+ * Forwarding a response does not claim it; only the destination login does.
+ *
+ * @param Auth $saml Validated SAML response.
+ * @return true|\WP_Error
+ */
+function prevent_assertion_replay( Auth $saml ) {
+	global $wpdb;
+
+	$assertion_id = $saml->getLastAssertionId();
+	$idp = $saml->getSettings()->getIdPData();
+	if ( empty( $assertion_id ) || empty( $idp['entityId'] ) ) {
+		return new \WP_Error( 'missing-assertion-id', esc_html__( 'Unable to identify the SAML assertion.', 'wp-simple-saml' ) );
+	}
+
+	// Use the configured IdP, rather than an issuer supplied by the response.
+	$option_name = 'wpsimplesaml_used_assertion_' . hash( 'sha256', $idp['entityId'] . "\0" . $assertion_id );
+	$table = is_multisite() ? $wpdb->get_blog_prefix( get_main_site_id() ) . 'options' : $wpdb->options;
+
+	// option_name is unique. A single insert allows only one concurrent login
+	// to claim the assertion, across all sites in the same network. Do not use
+	// transients or a read-then-write check, which can race or be evicted.
+	$previous_suppression = $wpdb->suppress_errors();
+	try {
+		$result = $wpdb->query( $wpdb->prepare(
+			"INSERT IGNORE INTO `$table` (option_name, option_value, autoload) VALUES (%s, %s, %s)",
+			$option_name,
+			'1',
+			'no'
+		) );
+	} finally {
+		$wpdb->suppress_errors( $previous_suppression );
+	}
+
+	if ( false === $result ) {
+		return new \WP_Error( 'assertion-storage-failed', esc_html__( 'Unable to record the SAML assertion. Please try signing in again.', 'wp-simple-saml' ) );
+	}
+	if ( 1 !== $result ) {
+		return new \WP_Error( 'replayed-assertion', esc_html__( 'This SAML assertion has already been used. Please start a new login.', 'wp-simple-saml' ) );
+	}
+
+	return true;
 }
 
 /**
