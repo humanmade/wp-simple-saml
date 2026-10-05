@@ -31,6 +31,7 @@ namespace HumanMade\SimpleSaml;
 
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Response as SAML2Response;
+use WP_Error;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
@@ -286,7 +287,7 @@ function action_verify() {
 /**
  * Get metadata of SP
  *
- * @return string|\WP_Error
+ * @return string|WP_Error
  */
 function get_metadata() {
 	$settings = instance()->getSettings();
@@ -304,7 +305,7 @@ function get_metadata() {
 		return $metadata;
 	}
 
-	return new \WP_Error(
+	return new WP_Error(
 		'wpsimplesaml_invalid_settings',
 		esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ),
 		$errors
@@ -329,19 +330,19 @@ function action_metadata() {
 }
 
 /**
- * @return Auth|\WP_Error
+ * @return Auth|WP_Error
  */
 function process_response() {
 	$saml = instance();
 
 	if ( ! $saml ) {
-		return new \WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
+		return new WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
 	}
 
 	try {
 		$config = Admin\get_config();
 		if ( is_wp_error( $config ) ) {
-			return new \WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
+			return new WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
 		}
 
 		// Manually verify the Destination attribute, and spoof the current URL.
@@ -364,10 +365,10 @@ function process_response() {
 		$saml->processResponse();
 	} catch ( \Throwable $e ) {
 		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+		return new WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+		return new WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} finally {
 		if ( isset( $original_host ) ) {
 			$_SERVER['HTTP_HOST'] = $original_host;
@@ -393,11 +394,11 @@ function process_response() {
 			);
 		}
 
-		return new \WP_Error( 'invalid-saml', $message );
+		return new WP_Error( 'invalid-saml', $message );
 	}
 
 	if ( ! $saml->isAuthenticated() ) {
-		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
+		return new WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
 	}
 
 	return $saml;
@@ -406,7 +407,7 @@ function process_response() {
 /**
  * Handle authentication responses
  *
- * @return \WP_User|\WP_Error
+ * @return \WP_User|WP_Error
  */
 function get_sso_user() {
 	$saml = process_response();
@@ -431,7 +432,7 @@ function get_sso_user() {
  * Forwarding a response does not claim it; only the destination login does.
  *
  * @param Auth $saml Validated SAML response.
- * @return true|\WP_Error
+ * @return true|WP_Error
  */
 function prevent_assertion_replay( Auth $saml ) {
 	global $wpdb;
@@ -439,7 +440,7 @@ function prevent_assertion_replay( Auth $saml ) {
 	$assertion_id = $saml->getLastAssertionId();
 	$idp = $saml->getSettings()->getIdPData();
 	if ( empty( $assertion_id ) || empty( $idp['entityId'] ) ) {
-		return new \WP_Error( 'missing-assertion-id', esc_html__( 'Unable to identify the SAML assertion.', 'wp-simple-saml' ) );
+		return new WP_Error( 'missing-assertion-id', esc_html__( 'Unable to identify the SAML assertion.', 'wp-simple-saml' ) );
 	}
 
 	// Use the configured IdP, rather than an issuer supplied by the response.
@@ -462,10 +463,10 @@ function prevent_assertion_replay( Auth $saml ) {
 	}
 
 	if ( false === $result ) {
-		return new \WP_Error( 'assertion-storage-failed', esc_html__( 'Unable to record the SAML assertion. Please try signing in again.', 'wp-simple-saml' ) );
+		return new WP_Error( 'assertion-storage-failed', esc_html__( 'Unable to record the SAML assertion. Please try signing in again.', 'wp-simple-saml' ) );
 	}
 	if ( 1 !== $result ) {
-		return new \WP_Error( 'replayed-assertion', esc_html__( 'This SAML assertion has already been used. Please start a new login.', 'wp-simple-saml' ) );
+		return new WP_Error( 'replayed-assertion', esc_html__( 'This SAML assertion has already been used. Please start a new login.', 'wp-simple-saml' ) );
 	}
 
 	return true;
@@ -476,7 +477,7 @@ function prevent_assertion_replay( Auth $saml ) {
  *
  * @param \OneLogin\Saml2\Auth $saml
  *
- * @return \WP_User|\WP_Error
+ * @return \WP_User|WP_Error
  */
 function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
@@ -552,7 +553,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	}
 
 	if ( ! is_a( $user, 'WP_User' ) ) {
-		return new \WP_Error( 'invalid-user', esc_html__( 'Could not create a new user.', 'wp-simple-saml' ) );
+		return new WP_Error( 'invalid-user', esc_html__( 'Could not create a new user.', 'wp-simple-saml' ) );
 	}
 
 	return $user;
