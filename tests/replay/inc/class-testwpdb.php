@@ -45,7 +45,7 @@ class TestWpdb {
 	 * @throws Exception When the disposable database cannot be opened.
 	 */
 	public function __construct() {
-		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_report -- Exercise a real database without WordPress.
+		// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_report, WordPress.DB.RestrictedFunctions.mysql_mysqli_report_off -- Exercise a real database without WordPress.
 		mysqli_report( MYSQLI_REPORT_OFF );
 		// phpcs:ignore WordPress.DB.RestrictedClasses.mysql__mysqli -- Disposable database connection for regression tests.
 		$this->conn = new mysqli( getenv( 'SAML_DB_HOST' ) ?: 'localhost', getenv( 'SAML_DB_USER' ) ?: 'root', getenv( 'SAML_DB_PASSWORD' ) ?: '', '', (int) ( getenv( 'SAML_DB_PORT' ) ?: 3306 ), getenv( 'SAML_DB_SOCKET' ) ?: null );

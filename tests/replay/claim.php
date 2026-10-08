@@ -31,6 +31,7 @@ if ( ( $argv[1] ?? '' ) === 'seed' ) {
 }
 if ( ( $argv[1] ?? '' ) === 'inspect' ) {
 	$result = $wpdb->conn->query( 'SELECT option_name, option_value, autoload FROM wp_options' );
+	// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_assoc -- Read the disposable regression database.
 	echo json_encode( $result->fetch_all( MYSQLI_ASSOC ) ) . "\n";
 	exit;
 }
