@@ -31,6 +31,7 @@ namespace HumanMade\SimpleSaml;
 
 use OneLogin\Saml2\Auth;
 use OneLogin\Saml2\Response as SAML2Response;
+use WP_Error;
 
 define( 'WP_SIMPLE_SAML_PLUGIN_FILE', __FILE__ );
 
@@ -286,7 +287,7 @@ function action_verify() {
 /**
  * Get metadata of SP
  *
- * @return string|\WP_Error
+ * @return string|WP_Error
  */
 function get_metadata() {
 	$settings = instance()->getSettings();
@@ -304,7 +305,7 @@ function get_metadata() {
 		return $metadata;
 	}
 
-	return new \WP_Error(
+	return new WP_Error(
 		'wpsimplesaml_invalid_settings',
 		esc_html__( 'Invalid SSO settings. Contact your administrator.', 'wp-simple-saml' ),
 		$errors
@@ -329,19 +330,19 @@ function action_metadata() {
 }
 
 /**
- * @return Auth|\WP_Error
+ * @return Auth|WP_Error
  */
 function process_response() {
 	$saml = instance();
 
 	if ( ! $saml ) {
-		return new \WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
+		return new WP_Error( 'no-saml-instance', esc_html__( 'Unable to get instance of SAML2 Auth object.', 'wp-simple-saml' ) );
 	}
 
 	try {
 		$config = Admin\get_config();
 		if ( is_wp_error( $config ) ) {
-			return new \WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
+			return new WP_Error( 'invalid-config', esc_html__( 'Unable to get config from SAML plugin.', 'wp-simple-saml' ) );
 		}
 
 		// Manually verify the Destination attribute, and spoof the current URL.
@@ -364,10 +365,10 @@ function process_response() {
 		$saml->processResponse();
 	} catch ( \Throwable $e ) {
 		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+		return new WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} catch ( \Exception $e ) {
 		/* translators: %s = error message */
-		return new \WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
+		return new WP_Error( 'invalid-saml', sprintf( esc_html__( 'Error: Could not parse the authentication response, please forward this error to your administrator: "%s"', 'wp-simple-saml' ), esc_html( $e->getMessage() ) ) );
 	} finally {
 		if ( isset( $original_host ) ) {
 			$_SERVER['HTTP_HOST'] = $original_host;
@@ -393,11 +394,11 @@ function process_response() {
 			);
 		}
 
-		return new \WP_Error( 'invalid-saml', $message );
+		return new WP_Error( 'invalid-saml', $message );
 	}
 
 	if ( ! $saml->isAuthenticated() ) {
-		return new \WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
+		return new WP_Error( 'not-authenticated', esc_html__( 'Error: Authentication wasn\'t completed successfully.', 'wp-simple-saml' ) );
 	}
 
 	return $saml;
@@ -406,7 +407,7 @@ function process_response() {
 /**
  * Handle authentication responses
  *
- * @return \WP_User|\WP_Error
+ * @return \WP_User|WP_Error
  */
 function get_sso_user() {
 	$saml = process_response();
@@ -415,7 +416,71 @@ function get_sso_user() {
 		return $saml;
 	}
 
+	$replay_check = prevent_assertion_replay( $saml );
+	if ( is_wp_error( $replay_check ) ) {
+		return $replay_check;
+	}
+
 	return get_or_create_wp_user( $saml );
+}
+
+/**
+ * Claim a validated assertion before provisioning or signing in a user.
+ *
+ * Records are deliberately permanent: without strict timestamp validation,
+ * deleting a record would allow an expired assertion to be accepted again.
+ * Forwarding a response does not claim it; only the destination login does.
+ *
+ * @param Auth $saml Validated SAML response.
+ * @return true|WP_Error
+ */
+function prevent_assertion_replay( Auth $saml ) {
+	global $wpdb;
+
+	$assertion_id = $saml->getLastAssertionId();
+	$idp = $saml->getSettings()->getIdPData();
+	if ( empty( $assertion_id ) || empty( $idp['entityId'] ) ) {
+		return new WP_Error( 'missing-assertion-id', esc_html__( 'Unable to identify the SAML assertion.', 'wp-simple-saml' ) );
+	}
+
+	// Use the configured IdP, rather than an issuer supplied by the response.
+	// Length-prefix each field so delimiters within either value are unambiguous.
+	$key_data = strlen( $idp['entityId'] ) . ':' . $idp['entityId'] . strlen( $assertion_id ) . ':' . $assertion_id;
+	$option_name = 'wpsimplesaml_used_assertion_v2_' . hash( 'sha256', $key_data );
+	// Keep claiming the legacy key too: existing records and concurrent older
+	// workers must still block reuse. The NUL encoding is only for compatibility.
+	$legacy_option_name = 'wpsimplesaml_used_assertion_' . hash( 'sha256', $idp['entityId'] . chr( 0 ) . $assertion_id );
+	$table = is_multisite() ? $wpdb->get_blog_prefix( get_main_site_id() ) . 'options' : $wpdb->options;
+
+	// option_name is unique. A single insert of both keys allows only one login
+	// to claim the assertion, across all sites in the same network. Do not use
+	// transients or a read-then-write check, which can race or be evicted.
+	$previous_suppression = $wpdb->suppress_errors();
+	try {
+		$result = $wpdb->query( $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name comes only from wpdb and the network main site, never request data.
+			"INSERT IGNORE INTO `$table` (option_name, option_value, autoload) VALUES (%s, %s, %s), (%s, %s, %s)",
+			$legacy_option_name,
+			'1',
+			'no',
+			$option_name,
+			'1',
+			'no'
+		) );
+	} finally {
+		$wpdb->suppress_errors( $previous_suppression );
+	}
+
+	if ( false === $result ) {
+		return new WP_Error( 'assertion-storage-failed', esc_html__( 'Unable to record the SAML assertion. Please try signing in again.', 'wp-simple-saml' ) );
+	}
+	// Both keys must be new. A partial insert is deliberately fail-closed and
+	// retained, even if a previous version only recorded the legacy key.
+	if ( 2 !== $result ) {
+		return new WP_Error( 'replayed-assertion', esc_html__( 'This SAML assertion has already been used. Please start a new login.', 'wp-simple-saml' ) );
+	}
+
+	return true;
 }
 
 /**
@@ -423,7 +488,7 @@ function get_sso_user() {
  *
  * @param \OneLogin\Saml2\Auth $saml
  *
- * @return \WP_User|\WP_Error
+ * @return \WP_User|WP_Error
  */
 function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 
@@ -499,7 +564,7 @@ function get_or_create_wp_user( \OneLogin\Saml2\Auth $saml ) {
 	}
 
 	if ( ! is_a( $user, 'WP_User' ) ) {
-		return new \WP_Error( 'invalid-user', esc_html__( 'Could not create a new user.', 'wp-simple-saml' ) );
+		return new WP_Error( 'invalid-user', esc_html__( 'Could not create a new user.', 'wp-simple-saml' ) );
 	}
 
 	return $user;

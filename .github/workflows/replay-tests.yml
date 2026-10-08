@@ -1,0 +1,47 @@
+name: Replay regression tests
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - codex/saml-replay-protection
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.1', '8.3']
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: replay-test
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -preplay-test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enable disposable database authentication supported by PHP 7.1
+        run: >-
+          docker exec "${{ job.services.mysql.id }}"
+          mysql -uroot -preplay-test -e
+          "ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'replay-test';"
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, dom, openssl
+          coverage: none
+      - name: Run signed-response and database regression tests
+        run: python3 tests/replay/run.py
+        env:
+          SAML_DB_HOST: 127.0.0.1
+          SAML_DB_USER: root
+          SAML_DB_PASSWORD: replay-test
