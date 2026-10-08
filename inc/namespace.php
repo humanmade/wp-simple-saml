@@ -444,16 +444,25 @@ function prevent_assertion_replay( Auth $saml ) {
 	}
 
 	// Use the configured IdP, rather than an issuer supplied by the response.
-	$option_name = 'wpsimplesaml_used_assertion_' . hash( 'sha256', $idp['entityId'] . "\0" . $assertion_id );
+	// Length-prefix each field so delimiters within either value are unambiguous.
+	$key_data = strlen( $idp['entityId'] ) . ':' . $idp['entityId'] . strlen( $assertion_id ) . ':' . $assertion_id;
+	$option_name = 'wpsimplesaml_used_assertion_v2_' . hash( 'sha256', $key_data );
+	// Keep claiming the legacy key too: existing records and concurrent older
+	// workers must still block reuse. The NUL encoding is only for compatibility.
+	$legacy_option_name = 'wpsimplesaml_used_assertion_' . hash( 'sha256', $idp['entityId'] . chr( 0 ) . $assertion_id );
 	$table = is_multisite() ? $wpdb->get_blog_prefix( get_main_site_id() ) . 'options' : $wpdb->options;
 
-	// option_name is unique. A single insert allows only one concurrent login
+	// option_name is unique. A single insert of both keys allows only one login
 	// to claim the assertion, across all sites in the same network. Do not use
 	// transients or a read-then-write check, which can race or be evicted.
 	$previous_suppression = $wpdb->suppress_errors();
 	try {
 		$result = $wpdb->query( $wpdb->prepare(
-			"INSERT IGNORE INTO `$table` (option_name, option_value, autoload) VALUES (%s, %s, %s)",
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name comes only from wpdb and the network main site, never request data.
+			"INSERT IGNORE INTO `$table` (option_name, option_value, autoload) VALUES (%s, %s, %s), (%s, %s, %s)",
+			$legacy_option_name,
+			'1',
+			'no',
 			$option_name,
 			'1',
 			'no'
@@ -465,7 +474,9 @@ function prevent_assertion_replay( Auth $saml ) {
 	if ( false === $result ) {
 		return new WP_Error( 'assertion-storage-failed', esc_html__( 'Unable to record the SAML assertion. Please try signing in again.', 'wp-simple-saml' ) );
 	}
-	if ( 1 !== $result ) {
+	// Both keys must be new. A partial insert is deliberately fail-closed and
+	// retained, even if a previous version only recorded the legacy key.
+	if ( 2 !== $result ) {
 		return new WP_Error( 'replayed-assertion', esc_html__( 'This SAML assertion has already been used. Please start a new login.', 'wp-simple-saml' ) );
 	}
 
