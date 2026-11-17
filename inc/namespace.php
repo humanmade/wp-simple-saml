@@ -109,8 +109,17 @@ function endpoint() {
 
 	// If nothing happens,
 	do_action( 'wpsimplesaml_invalid_endpoint', $action );
-	// i haz no monies!
-	wp_safe_redirect( home_url(), 404 );
+
+	// wp_safe_redirect() only accepts 3xx statuses, so send a real 404 response instead.
+	$wp_query->set_404();
+	status_header( 404 );
+	nocache_headers();
+
+	$template = get_404_template();
+	if ( ! $template ) {
+		$template = get_index_template();
+	}
+	include $template;
 	exit;
 }
 
