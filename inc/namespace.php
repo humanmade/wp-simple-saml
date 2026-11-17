@@ -111,16 +111,10 @@ function endpoint() {
 	do_action( 'wpsimplesaml_invalid_endpoint', $action );
 
 	// wp_safe_redirect() only accepts 3xx statuses, so send a real 404 response instead.
+	// WordPress then renders the theme's 404 template.
 	$wp_query->set_404();
 	status_header( 404 );
 	nocache_headers();
-
-	$template = get_404_template();
-	if ( ! $template ) {
-		$template = get_index_template();
-	}
-	include $template;
-	exit;
 }
 
 /**
